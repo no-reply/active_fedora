@@ -84,4 +84,19 @@ describe ActiveFedora::NokogiriDatastream do
       @test_object.to_solr['mods_journal_issue_publication_date_dt'].should == ['2012-11-02T00:00:00Z']
     end
   end
+
+  describe "#generate_solr_symbol" do
+    it "should use the default mapper from the Solrizer gem" do
+      # This is a strange problem where AF will not use the default mapper in the Solrizer gem when it's running tests.
+      # If you go into a irb session, it works though:
+      #
+      # $ irb -I lib
+      # 1.9.3p286 :001 > require 'active-fedora'
+      #  => true 
+      # 1.9.3p286 :002 > Solrizer::FieldMapper::Default.new.mappings[:searchable].data_types[:date].converter.is_a?(Proc)
+      #  => true 
+      puts Solrizer::XML::TerminologyBasedSolrizer.default_field_mapper.mappings[:searchable].data_types[:date].converter.is_a?(Proc).should be_true
+    end
+  end
+
 end
