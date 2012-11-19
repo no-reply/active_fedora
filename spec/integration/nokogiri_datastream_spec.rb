@@ -95,7 +95,7 @@ describe ActiveFedora::NokogiriDatastream do
       #  => true 
       # 1.9.3p286 :002 > Solrizer::FieldMapper::Default.new.mappings[:searchable].data_types[:date].converter.is_a?(Proc)
       #  => true 
-      puts Solrizer::XML::TerminologyBasedSolrizer.default_field_mapper.mappings[:searchable].data_types[:date].converter.is_a?(Proc).should be_true
+      Solrizer::XML::TerminologyBasedSolrizer.default_field_mapper.mappings[:searchable].data_types[:date].converter.is_a?(Proc).should be_true
     end
   end
 
