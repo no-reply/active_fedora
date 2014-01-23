@@ -1,5 +1,9 @@
 module ActiveFedora
-  class RDFDatastream < Datastream
+  class RDFDatastream < ActiveFedora::Datastream
+    include Solrizer::Common
+    extend Rdf::RdfProperties
+
+    delegate :rdf_subject, :set_value, :get_values, :to => :resource
 
     before_save do
       if content.blank?
@@ -7,103 +11,122 @@ module ActiveFedora
         false
       end
     end
-    include RdfNode
-    include Rdf::Indexing
-    
-    class << self 
-      ##
-      # Register a ruby block that evaluates to the subject of the graph
-      # By default, the block returns the current object's pid
-      # @yield [ds] 'ds' is the datastream instance
-      # This should override the method in RdfObject, which just creates a b-node by default
-      def rdf_subject &block
-        if block_given?
-           return @subject_block = block
-        end
-
-        @subject_block ||= lambda { |ds| RDF::URI.new("info:fedora/#{ds.pid}") }
-      end
-    end
 
     def metadata?
       true
     end
 
-    # Overriding so that one can call ds.content on an unsaved datastream and they will see the serialized format
     def content
       serialize
     end
 
     def content=(content)
-      reset_child_cache!
-      @graph = deserialize(content)
+      resource.clear!
+      resource << RDF::Reader.for(serialization_format).new(content)
+      content
     end
 
     def content_changed?
-      # we haven't touched the graph, so it isn't changed (avoid a force load)
-      return false unless instance_variable_defined? :@graph
       @content = serialize
       super
     end
-    # Populate a RDFDatastream object based on the "datastream" content 
-    # Assumes that the datastream contains RDF content
-    # @param [String] data the "rdf" node 
-    def deserialize(data = nil)
-      repository = RDF::Repository.new
-      return repository if new? and data.nil?
 
-      data ||= datastream_content
-      data.force_encoding('utf-8')
-      RDF::Reader.for(serialization_format).new(data) do |reader|
-        reader.each_statement do |statement|
-          repository << statement
-        end
-      end
-
-      repository
+    # Utility method which can be overridden to determine the object
+    # resource that is created.
+    def resource_class
+      Rdf::ObjectResource
     end
 
-    def graph
-      @graph ||= begin
-        deserialize
-      end      
+    ##
+    # The resource is the RdfResource object that stores the graph for
+    # the datastream and is the central point for its relationship to
+    # other nodes.
+    #
+    # set_value, get_value, and property accessors are delegated to this object.
+    def resource
+      @resource ||= begin
+                      r = resource_class.new(pid)
+                      r.singleton_class.properties = self.class.properties
+                      r << RDF::Reader.for(serialization_format).new(datastream_content) if datastream_content
+                      r
+                    end
+    end
+
+    alias_method :graph, :resource
+
+
+    ##
+    # This method allows for delegation.
+    # This patches the fact that there's no consistent API for allowing delegation - we're matching the
+    # OMDatastream implementation as our "consistency" point.
+    # @TODO: We may need to enable deep RDF delegation at one point.
+    def term_values(*values)
+      self.send(values.first)
+    end
+
+    def update_indexed_attributes(hash)
+      hash.each do |fields, value|
+        fields.each do |field|
+          self.send("#{field}=", value)
+        end
+      end
+    end
+
+    def serialize
+      resource.set_subject!(pid) if pid and rdf_subject.node?
+      resource.dump serialization_format
+    end
+
+    def deserialize(data=nil)
+      return RDF::Graph.new if new? and data.nil?
+      data ||= datstream_content
+      RDF::Graph.new << RDF::Reader.for(serialization_format).new(content)
     end
 
     def serialization_format
       raise "you must override the `serialization_format' method in a subclass"
     end
 
-    # Creates a RDF datastream for insertion into a Fedora Object
-    # Note: This method is implemented on SemanticNode instead of RelsExtDatastream because SemanticNode contains the relationships array
-    def serialize
-      update_subjects_to_use_a_real_pid!
-
-      RDF::Writer.for(serialization_format).dump(graph)
+    def to_solr(solr_doc = Hash.new) # :nodoc:
+      fields.each do |field_key, field_info|
+        values = resource.get_values(field_key)
+        if values
+          Array.wrap(values).each do |val|
+            val = val.to_s if val.kind_of? RDF::URI
+            val = val.solrize if val.kind_of? Rdf::RdfResource
+            self.class.create_and_insert_terms(prefix(field_key), val, field_info[:behaviors], solr_doc)
+          end
+        end
+      end
+      solr_doc
     end
 
-    
-    private 
+    def prefix(name)
+      name = name.to_s unless name.is_a? String
+      pre = dsid.underscore
+      return "#{pre}__#{name}".to_sym
+    end
 
-    def update_subjects_to_use_a_real_pid!
-      return unless new?
+    private
 
-      bad_subject = rdf_subject
-      reset_rdf_subject!
-      reset_child_cache!
-      new_subject = rdf_subject
+    ##
+    # Builds a map of properties with values, type and index behaviors
+    # for consumption by to_solr.
+    def fields
+      field_map = {}.with_indifferent_access
 
-      new_repository = RDF::Repository.new
-
-      graph.each_statement do |statement|
-          subject = statement.subject
-
-          subject &&= new_subject if subject == bad_subject
-          new_repository << [subject, statement.predicate, statement.object]
+      self.class.properties.each do |name, config|
+        type = config[:type]
+        behaviors = config[:behaviors]
+        next unless type and behaviors
+        next if config[:class_name] && config[:class_name] < ActiveFedora::Base
+        resource.query(:subject => rdf_subject, :predicate => config[:predicate]).each_statement do |statement|
+          field_map[name] ||= {:values => [], :type => type, :behaviors => behaviors}
+          field_map[name][:values] << statement.object.to_s
+        end
       end
-
-      @graph = new_repository
+      return field_map
     end
 
   end
 end
-
