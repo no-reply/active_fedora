@@ -144,32 +144,8 @@ module ActiveFedora::Rdf
       if args.length > 3 || args.length < 2
         raise ArgumentError("wrong number of arguments (#{args.length} for 2-3)")
       end
-      if args.length == 3
-        rdf_subject = args.shift
-        rdf_subject = RDF::URI.new(rdf_subject.to_s) unless rdf_subject.kind_of? RDF::Value
-      else
-        rdf_subject = self.rdf_subject
-      end
-      property = args.first
-      values = args.last
-
-      values = Array.wrap(values)
-      predicate = predicate_for_property(property)
-      delete([rdf_subject, predicate, nil])
-      old_value = self.get_values(property)
-      values.each do |val|
-        val = RDF::Literal(val) if val.kind_of? String
-        val = val.resource if val.respond_to?(:resource)
-        #warn("Warning: #{val.to_s} is not of class #{property_class}.") unless val.kind_of? property_class or property_class == nil
-        if val.kind_of? RdfResource
-          add_child_node(property, val)
-          next
-        end
-        val = val.to_uri if val.respond_to? :to_uri
-        raise 'value must be an RDF URI, Node, Literal, or a plain string' unless
-            val.kind_of? RDF::Value or val.kind_of? RDF::Literal
-        insert [rdf_subject, predicate, val]
-      end
+      values = args.pop
+      ActiveFedora::Rdf::Term.new(self, args).set(values)
     end
 
     ##
@@ -257,7 +233,7 @@ module ActiveFedora::Rdf
 
     def class_for_property(property)
       klass = properties[property][:class_name] if properties.include? property
-      klass ||= Rdf::RdfResource
+      klass ||= ActiveFedora::Rdf::RdfResource
       klass
     end
 
