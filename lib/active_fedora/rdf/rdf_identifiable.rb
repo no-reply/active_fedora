@@ -25,7 +25,7 @@ module ActiveFedora::Rdf::RdfIdentifiable
     # @see OregonDigital::RDF::RdfResource.from_uri
     # @param [RDF::URI] uri URI that is being looked up.
     def from_uri(uri,_)
-      uri = uri.to_s.gsub(NewRDF::ObjectResource.base_uri,"")
+      uri = uri.to_s.gsub(ActiveFedora::Rdf::ObjectResource.base_uri,"")
       return self.find(uri)
     end
   end

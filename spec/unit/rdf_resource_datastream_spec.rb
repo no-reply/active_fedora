@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe RDFDatastream do
+describe ActiveFedora::RDFDatastream do
   before(:each) do
-    class DummySubnode < Rdf::RdfResource
+    class DummySubnode < ActiveFedora::Rdf::RdfResource
       property :title, :predicate => RDF::DC[:title], :class_name => RDF::Literal
       property :relation, :predicate => RDF::DC[:relation]
     end
     class DummyAsset < ActiveFedora::Base; end;
-    class DummyResource < RDFDatastream
+    class DummyResource < ActiveFedora::RDFDatastream
       property :title, :predicate => RDF::DC[:title], :class_name => RDF::Literal do |index|
         index.as :searchable, :displayable
       end
@@ -22,11 +22,12 @@ describe RDFDatastream do
       end
     end
     class DummyAsset < ActiveFedora::Base
-      include Rdf::RdfIdentifiable
+      include ActiveFedora::Rdf::RdfIdentifiable
       has_metadata :name => 'descMetadata', :type => DummyResource
-      delegate :title, :to => :descMetadata, :multiple => true
-      delegate :license, :to => :descMetadata, :multiple => true
-      delegate :relation, :to => 'descMetadata', :at => [:license, :relation], :multiple => false
+      #delegate :title, :to => :descMetadata, :multiple => true
+      has_attributes :title, datastream: 'descMetadata', multiple: true
+      has_attributes :license, :datastream => 'descMetadata', :multiple => true
+      has_attributes :relation, :datastream => 'descMetadata', :at => [:license, :relation], :multiple => false
     end
   end
   after(:each) do
@@ -131,6 +132,7 @@ describe RDFDatastream do
       context "persisted to repository" do
         before(:each) do
           DummySubnode.configure :repository => :default
+          DummySubnode.any_instance.stub(:repository).and_return(RDF::Repository.new)
           dummy = DummySubnode.new(RDF::URI('http://example.org/dummy/blah'))
           dummy.title = 'subbla'
           # We want to have to manually persist to the repository.

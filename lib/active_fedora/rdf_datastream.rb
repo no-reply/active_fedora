@@ -79,7 +79,7 @@ module ActiveFedora
 
     def deserialize(data=nil)
       return RDF::Graph.new if new? and data.nil?
-      data ||= datstream_content
+      data ||= datastream_content
       RDF::Graph.new << RDF::Reader.for(serialization_format).new(content)
     end
 

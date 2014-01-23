@@ -24,7 +24,7 @@ module ActiveFedora::Rdf
     # @param [Hash]  opts for this property, must include a :predicate
     # @yield [index] index sets solr behaviors for the property
     def property(name, opts={}, &block)
-      config = ActiveFedora::Rdf::NodeConfig.new(name, opts[:predicate], :class_name => opts[:class_name]).tap do |config|
+      config = ActiveFedora::Rdf::NodeConfig.new(name, opts[:predicate], opts.except(:predicate)).tap do |config|
         config.with_index(&block) if block_given?
       end
       behaviors = config.behaviors.flatten if config.behaviors and not config.behaviors.empty?
@@ -33,7 +33,8 @@ module ActiveFedora::Rdf
         :type => config.type,
         :class_name => config.class_name,
         :predicate => config.predicate,
-        :term => config.term
+        :term => config.term,
+        :multivalue => config.multivalue
       }
       register_property(name)
     end

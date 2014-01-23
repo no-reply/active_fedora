@@ -180,32 +180,7 @@ module ActiveFedora::Rdf
     # passing the rdf_subject to be used in th statement:
     #    get_values(uri, property)
     def get_values(*args)
-      raise ArgumentError("wrong number of arguments (#{args.length} for 1-2)") if args.length < 1 || args.length > 2
-      property = args.last
-      if args.length > 1
-        rdf_subject = args.first
-      else
-        rdf_subject = self.rdf_subject
-      end
-      values = []
-      predicate = predicate_for_property(property)
-      # Again, why do we need a special query for nodes?
-      if node?
-        each_statement do |statement|
-          value = statement.object if statement.subject == rdf_subject and statement.predicate == predicate
-          value = value.to_s if value.kind_of? RDF::Literal
-          value = make_node(property, value) if value.kind_of? RDF::Value
-          values << value unless value.nil?
-        end
-        return values
-      end
-      query(:subject => rdf_subject, :predicate => predicate).each_statement do |statement|
-        value = statement.object
-        value = value.to_s if value.kind_of? RDF::Literal
-        value = make_node(property, value) if value.kind_of? RDF::Value
-        values << value unless value.nil?
-      end
-      values
+      ActiveFedora::Rdf::Term.new(self, args)
     end
 
     ##
@@ -304,7 +279,7 @@ module ActiveFedora::Rdf
         if self.class.repository == :parent
           parent
         else
-          Rdf::RdfRepositories.repositories[self.class.repository]
+          ActiveFedora::Rdf::RdfRepositories.repositories[self.class.repository]
         end
       end
     end
