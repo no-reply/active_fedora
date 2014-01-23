@@ -1,14 +1,14 @@
 require "spec_helper"
-describe Rdf::RdfResource do
+describe ActiveFedora::Rdf::RdfResource do
 
   before(:each) do
-    class DummyLicense < Rdf::RdfResource
+    class DummyLicense < ActiveFedora::Rdf::RdfResource
       map_predicates do |map|
         map.title(:in => RDF::DC)
       end
     end
 
-    class DummyResource < Rdf::RdfResource
+    class DummyResource < ActiveFedora::Rdf::RdfResource
       configure :type => RDF::URI('http://example.org/SomeClass')
       property :license, :predicate => RDF::DC.license, :class_name => DummyLicense
       map_predicates do |map|
