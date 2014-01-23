@@ -5,6 +5,16 @@ module ActiveFedora
 
     delegate :rdf_subject, :set_value, :get_values, :to => :resource
 
+    class << self
+      def rdf_subject &block
+        if block_given?
+          return @subject_block = block
+        end
+
+        @subject_block ||= lambda { |ds| ds.pid }
+      end
+    end
+
     before_save do
       if content.blank?
         logger.warn "Cowardly refusing to save a datastream with empty content: #{self.inspect}"
@@ -46,7 +56,7 @@ module ActiveFedora
     # set_value, get_value, and property accessors are delegated to this object.
     def resource
       @resource ||= begin
-                      r = resource_class.new(digital_object ? pid : nil)
+                      r = resource_class.new(digital_object ? self.class.rdf_subject.call(self) : nil)
                       r.singleton_class.properties = self.class.properties
                       r << RDF::Reader.for(serialization_format).new(datastream_content) if datastream_content
                       r
