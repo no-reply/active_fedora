@@ -37,6 +37,17 @@ module ActiveFedora::Rdf
       end
     end
 
+    def delete(*values)
+      values.each do |value|
+        parent.delete([rdf_subject, predicate, value])
+      end
+    end
+
+    def << (values)
+      values = Array.wrap(result) | Array.wrap(values)
+          self.set(values)
+    end
+
     private
 
     def add_child_node(resource)
