@@ -8,13 +8,9 @@ module ActiveFedora::Rdf
     end
 
     def clear
-      parent.query([rdf_subject, predicate]).each do |solution|
-        # TODO - Recursive delete
-        # Delete everythign we're pointing at.
-        parent.delete([solution.object, nil, nil]) if solution.object.uri?
-      end
+      set(nil)
       # Delete all the assertions about this object
-      parent.delete([rdf_subject, nil, nil])
+      #parent.delete([rdf_subject, nil, nil])
     end
 
     def result
@@ -22,6 +18,42 @@ module ActiveFedora::Rdf
       result ||= standard_result
       return result if !property_config || property_config[:multivalue]
       result.first
+    end
+
+    def set(values)
+      values = Array.wrap(values)
+      parent.delete([rdf_subject, predicate, nil])
+      values.each do |val|
+        val = RDF::Literal(val) if val.kind_of? String
+        val = val.resource if val.respond_to?(:resource)
+        if val.kind_of? RdfResource
+          add_child_node(val)
+          next
+        end
+        val = val.to_uri if val.respond_to? :to_uri
+        raise 'value must be an RDF URI, Node, Literal, or a plain string' unless
+            val.kind_of? RDF::Value or val.kind_of? RDF::Literal
+        parent.insert [rdf_subject, predicate, val]
+      end
+    end
+
+    def delete(*values)
+      values.each do |value|
+        parent.delete([rdf_subject, predicate, value])
+      end
+    end
+
+    def << (values)
+      values = Array.wrap(result) | Array.wrap(values)
+          self.set(values)
+    end
+
+    private
+
+    def add_child_node(resource)
+      parent.insert [rdf_subject, predicate, resource.rdf_subject]
+      resource.parent = parent
+      resource.persist! if resource.class.repository == :parent
     end
 
     def property_config

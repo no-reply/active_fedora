@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe ActiveFedora::NtriplesRDFDatastream do
   describe "an instance with content" do
-    before do 
+    before do
       class MyDatastream < ActiveFedora::NtriplesRDFDatastream
         map_predicates do |map|
           map.created(:in => RDF::DC)
@@ -42,9 +42,9 @@ describe ActiveFedora::NtriplesRDFDatastream do
 
     it "should be able to call enumerable methods on the fields" do
       @subject.title.join(', ').should == "Title of work"
-      @subject.title.count.should == 1 
-      @subject.title.size.should == 1 
-      @subject.title[0].should == "Title of work" 
+      @subject.title.count.should == 1
+      @subject.title.size.should == 1
+      @subject.title[0].should == "Title of work"
       @subject.title.to_a.should == ["Title of work"]
       val = []
       @subject.title.each_with_index {|v, i| val << "#{i}. #{v}"}
@@ -88,7 +88,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
   end
 
   describe "an instance with a custom subject" do
-    before do 
+    before do
       class MyDatastream < ActiveFedora::NtriplesRDFDatastream
         rdf_subject { |ds| "info:fedora/#{ds.pid}/content" }
         map_predicates do |map|
@@ -99,6 +99,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
           map.related_url(:to => "seeAlso", :in => RDF::RDFS)
         end
       end
+      @inner_object = double('inner object', :pid=>'test:1', :new_record? =>true)
       @subject = MyDatastream.new(@inner_object, 'mixed_rdf')
       @subject.stub(:pid => 'test:1')
       @subject.stub(:new_record? => false)
@@ -144,19 +145,19 @@ describe ActiveFedora::NtriplesRDFDatastream do
     before(:all) do
       class MyDatastream < ActiveFedora::NtriplesRDFDatastream
         map_predicates do |map|
-          map.created(:in => RDF::DC) do |index| 
+          map.created(:in => RDF::DC) do |index|
             index.as :sortable, :displayable
             index.type :date
           end
           map.title(:in => RDF::DC) do |index|
             index.as :stored_searchable, :sortable
-            index.type :text 
+            index.type :text
           end
-          map.publisher(:in => RDF::DC) do |index| 
+          map.publisher(:in => RDF::DC) do |index|
             index.as :facetable, :sortable, :stored_searchable
           end
           map.based_near(:in => RDF::FOAF) do |index|
-            index.as :facetable, :stored_searchable 
+            index.as :facetable, :stored_searchable
             index.type :text
           end
           map.related_url(:to => "seeAlso", :in => RDF::RDFS) do |index|
@@ -171,7 +172,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
     after(:all) do
       Object.send(:remove_const, :MyDatastream)
     end
-    before(:each) do  
+    before(:each) do
       @subject.stub(:pid => 'test:1')
     end
     it "should provide .to_solr and return a SolrDocument" do
@@ -245,9 +246,9 @@ describe ActiveFedora::NtriplesRDFDatastream do
           @obj.to_solr.keys.should include(ActiveFedora::SolrService.solr_name("solr_rdf__related_url", type: :string),
                 ActiveFedora::SolrService.solr_name("solr_rdf__publisher", type: :string),
                 ActiveFedora::SolrService.solr_name("solr_rdf__publisher", :sortable),
-                ActiveFedora::SolrService.solr_name("solr_rdf__publisher", :facetable), 
+                ActiveFedora::SolrService.solr_name("solr_rdf__publisher", :facetable),
                 ActiveFedora::SolrService.solr_name("solr_rdf__created", :sortable, type: :date),
-                ActiveFedora::SolrService.solr_name("solr_rdf__created", :displayable), 
+                ActiveFedora::SolrService.solr_name("solr_rdf__created", :displayable),
                 ActiveFedora::SolrService.solr_name("solr_rdf__title", type: :string),
                 ActiveFedora::SolrService.solr_name("solr_rdf__title", :sortable),
                 ActiveFedora::SolrService.solr_name("solr_rdf__based_near", type: :string),

@@ -47,6 +47,10 @@ module ActiveFedora::Rdf
       end
     end
 
+    def fields
+      properties.keys.map(&:to_sym)
+    end
+
     private
 
     ##
