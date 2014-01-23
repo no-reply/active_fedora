@@ -81,6 +81,10 @@ module ActiveFedora::Rdf
       return node? ? [] : [rdf_subject.to_s]
     end
 
+    def fields
+      properties.keys.map(&:to_sym)
+    end
+
     ##
     # Load data from URI
     # @TODO: use graph name context for provenance

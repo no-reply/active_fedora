@@ -27,6 +27,7 @@ module ActiveFedora
     end
 
     def content_changed?
+      return false unless instance_variable_defined? :@resource
       @content = serialize
       super
     end
@@ -78,9 +79,10 @@ module ActiveFedora
     end
 
     def deserialize(data=nil)
-      return RDF::Graph.new if new? and data.nil?
+      return RDF::Graph.new if new? && data.nil?
       data ||= datastream_content
-      RDF::Graph.new << RDF::Reader.for(serialization_format).new(content)
+      data.force_encoding('utf-8')
+      RDF::Graph.new << RDF::Reader.for(serialization_format).new(data)
     end
 
     def serialization_format
