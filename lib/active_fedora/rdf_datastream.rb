@@ -45,7 +45,7 @@ module ActiveFedora
     # set_value, get_value, and property accessors are delegated to this object.
     def resource
       @resource ||= begin
-                      r = resource_class.new(pid)
+                      r = resource_class.new(digital_object ? pid : nil)
                       r.singleton_class.properties = self.class.properties
                       r << RDF::Reader.for(serialization_format).new(datastream_content) if datastream_content
                       r
@@ -73,7 +73,7 @@ module ActiveFedora
     end
 
     def serialize
-      resource.set_subject!(pid) if pid and rdf_subject.node?
+      resource.set_subject!(pid) if digital_object and pid and rdf_subject.node?
       resource.dump serialization_format
     end
 
