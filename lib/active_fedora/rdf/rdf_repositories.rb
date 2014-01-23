@@ -1,4 +1,4 @@
-module NewRDF
+module ActiveFedora::Rdf
   ##
   # Defines module methods for registering an RDF::Repository for
   # persistence of RdfResources.

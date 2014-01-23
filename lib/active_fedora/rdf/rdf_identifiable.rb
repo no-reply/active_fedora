@@ -8,7 +8,7 @@
 #   subject.descMetadata.set = base
 #   subject.descMetadata.set # => <ActiveFedora::Base>
 #   subject.descMetadata.set.title # => 'test'
-module NewRDF::RdfIdentifiable
+module ActiveFedora::Rdf::RdfIdentifiable
   extend ActiveSupport::Concern
   ##
   # Defines which resource defines this ActiveFedora object.

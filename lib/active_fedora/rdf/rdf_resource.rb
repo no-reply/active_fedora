@@ -278,7 +278,7 @@ module ActiveFedora::Rdf
 
     def class_for_property(property)
       klass = properties[property][:class_name] if properties.include? property
-      klass ||= NewRDF::RdfResource
+      klass ||= Rdf::RdfResource
       klass
     end
 
@@ -304,7 +304,7 @@ module ActiveFedora::Rdf
         if self.class.repository == :parent
           parent
         else
-          NewRDF::RdfRepositories.repositories[self.class.repository]
+          Rdf::RdfRepositories.repositories[self.class.repository]
         end
       end
     end
