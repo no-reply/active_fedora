@@ -37,7 +37,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
       @subject.title.should == ["Title of work"]
       @subject.publisher.should == ["Penn State"]
       @subject.based_near.should == ["New York, NY, US"]
-      @subject.related_url.should == ["http://google.com/"]
+      @subject.related_url.first.rdf_subject.should == "http://google.com/"
     end
 
     it "should be able to call enumerable methods on the fields" do
