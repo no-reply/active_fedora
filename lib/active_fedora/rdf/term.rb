@@ -37,6 +37,13 @@ module ActiveFedora::Rdf
       end
     end
 
+    def build(attributes={})
+      new_subject = attributes.key?('id') ? attributes.delete('id') : RDF::Node.new
+      node = make_node(new_subject)
+      node.attributes = attributes
+      self.push node
+    end
+
     def delete(*values)
       values.each do |value|
         parent.delete([rdf_subject, predicate, value])
@@ -48,6 +55,15 @@ module ActiveFedora::Rdf
           self.set(values)
     end
 
+    alias_method :push, :<<
+
+    def property_config
+      parent.send(:properties)[property]
+    end
+
+    def reset!
+    end
+
     private
 
     def add_child_node(resource)
@@ -56,16 +72,12 @@ module ActiveFedora::Rdf
       resource.persist! if resource.class.repository == :parent
     end
 
-    def property_config
-      parent.send(:properties)[property]
-    end
-
     def standard_result
       values = []
       parent.query(:subject => rdf_subject, :predicate => predicate).each_statement do |statement|
         value = statement.object
         value = value.to_s if value.kind_of? RDF::Literal
-        value = parent.send(:make_node,property, value) if value.kind_of? RDF::Value
+        value = make_node(value) if value.kind_of? RDF::Value
         values << value unless value.nil?
       end
       return values
@@ -76,7 +88,7 @@ module ActiveFedora::Rdf
       parent.each_statement do |statement|
         value = statement.object if statement.subject == rdf_subject && statement.predicate == predicate
         value = value.to_s if value.kind_of? RDF::Literal
-        value = parent.send(:make_node,property, value) if value.kind_of? RDF::Value
+        value = make_node(value) if value.kind_of? RDF::Value
         values << value unless value.nil?
       end
       return values
@@ -97,6 +109,40 @@ module ActiveFedora::Rdf
       else
         return parent.rdf_subject
       end
+    end
+
+    ##
+    # Build a child resource or return it from this object's cache
+    #
+    # Builds the resource from the class_name specified for the
+    # property.
+    def make_node(value)
+      klass = class_for_property
+      value = RDF::Node.new if value.nil?
+      return parent.node_cache[value] if parent.node_cache[value]
+      node = klass.from_uri(value,parent)
+      parent.node_cache[value] = node
+      return node
+    end
+
+    def final_parent
+      @final_parent ||= begin
+        parent = self.parent
+        while parent != parent.parent && parent.parent
+          parent = parent.parent
+        end
+        if parent.datastream
+          return parent.datastream
+        end
+        parent
+      end
+    end
+
+    def class_for_property
+      klass = property_config[:class_name]
+      klass ||= ActiveFedora::Rdf::RdfResource
+      klass = ActiveFedora.class_from_string(klass, final_parent.class) if klass.kind_of? String
+      klass
     end
 
   end

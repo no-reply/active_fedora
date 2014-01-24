@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "Nesting attribute behavior of RDFDatastream" do
   describe ".attributes=" do
     describe "complex properties" do
-      before do 
+      before do
         class DummyMADS < RDF::Vocabulary("http://www.loc.gov/mads/rdf/v1#")
           # componentList and Types of components
           property :componentList
@@ -12,8 +12,8 @@ describe "Nesting attribute behavior of RDFDatastream" do
           property :PersonalName
           property :CorporateName
           property :ComplexSubject
-          
-          
+
+
           # elementList and elementList values
           property :elementList
           property :elementValue
@@ -75,8 +75,8 @@ describe "Nesting attribute behavior of RDFDatastream" do
         Object.send(:remove_const, :DummyMADS)
       end
       subject { ComplexRDFDatastream.new(double('inner object', :pid=>'foo', :new_record? =>true), 'descMetadata') }
-      let(:params) do 
-        { myResource: 
+      let(:params) do
+        { myResource:
           {
             topic_attributes: {
               '0' =>
@@ -93,12 +93,12 @@ describe "Nesting attribute behavior of RDFDatastream" do
               }
             },
             personalName_attributes: [
-              { 
+              {
                 elementList_attributes: [{
                   fullNameElement: "Jefferson, Thomas",
-                  dateNameElement: "1743-1826"                  
+                  dateNameElement: "1743-1826"
                 }]
-              } 
+              }
               #, "Hemings, Sally"
             ],
           }
@@ -106,7 +106,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
       end
 
       describe "on lists" do
-        subject { ComplexRDFDatastream::PersonalName.new(RDF::Graph.new) } 
+        subject { ComplexRDFDatastream::PersonalName.new(RDF::Graph.new) }
         it "should accept a hash" do
           subject.elementList_attributes =  [{ topicElement_attributes: {'0' => { elementValue:"Quantum Behavior" }, '1' => { elementValue:"Wave Function" }}}]
           subject.elementList.first[0].elementValue.should == ["Quantum Behavior"]
@@ -125,7 +125,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
           subject.attributes = params[:myResource]
 
           # Here's how this would happen if we didn't have attributes=
-          # personal_name = subject.personalName.build 
+          # personal_name = subject.personalName.build
           # elem_list = personal_name.elementList.build
           # elem_list.fullNameElement = "Jefferson, Thomas"
           # elem_list.dateNameElement = "1743-1826"
@@ -141,15 +141,14 @@ describe "Nesting attribute behavior of RDFDatastream" do
     end
 
     describe "with an existing object" do
-      before(:each) do 
+      before(:each) do
         class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
           map_predicates do |map|
             map.parts(:in=> RDF::DC, :to=>'hasPart', :class_name=>'Component')
           end
           accepts_nested_attributes_for :parts, allow_destroy: true
 
-          class Component
-            include ActiveFedora::RdfObject
+          class Component < ActiveFedora::Rdf::ObjectResource
             map_predicates do |map|
               map.label(:in=> RDF::DC, :to=>'title')
             end
@@ -157,7 +156,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
         end
 
       end
-      
+
       after(:each) do
         Object.send(:remove_const, :SpecDatastream)
       end
@@ -182,6 +181,6 @@ describe "Nesting attribute behavior of RDFDatastream" do
        subject.parts_attributes= [{id: 'http://example.com/part#1', label: "Universal Joint"}]
        subject.parts.last.rdf_subject.should == 'http://example.com/part#1'
       end
-    end    
+    end
   end
 end

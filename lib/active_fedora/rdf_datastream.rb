@@ -1,9 +1,10 @@
 module ActiveFedora
   class RDFDatastream < ActiveFedora::Datastream
     include Solrizer::Common
+    include ActiveFedora::Rdf::NestedAttributes
     extend Rdf::RdfProperties
 
-    delegate :rdf_subject, :set_value, :get_values, :to => :resource
+    delegate :rdf_subject, :set_value, :get_values, :attributes=, :to => :resource
 
     class << self
       def rdf_subject &block
@@ -58,6 +59,11 @@ module ActiveFedora
       @resource ||= begin
                       r = resource_class.new(digital_object ? self.class.rdf_subject.call(self) : nil)
                       r.singleton_class.properties = self.class.properties
+                      r.singleton_class.properties.keys.each do |property|
+                        r.singleton_class.send(:register_property, property)
+                      end
+                      r.datastream = self
+                      r.singleton_class.accepts_nested_attributes_for(*nested_attributes_options.keys) unless nested_attributes_options.blank?
                       r << RDF::Reader.for(serialization_format).new(datastream_content) if datastream_content
                       r
                     end

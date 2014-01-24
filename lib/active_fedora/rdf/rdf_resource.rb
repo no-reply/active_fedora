@@ -18,7 +18,8 @@ module ActiveFedora::Rdf
   class RdfResource < RDF::Graph
     extend RdfConfigurable
     extend RdfProperties
-    attr_accessor :parent
+    include ActiveFedora::Rdf::NestedAttributes
+    attr_accessor :parent, :node_cache, :datastream
 
     ##
     # Adapter for a consistent interface for creating a new node from a URI.
@@ -43,6 +44,17 @@ module ActiveFedora::Rdf
       set_subject!(resource_uri) if resource_uri
       super(*args, &block)
       reload
+    end
+
+    def attributes=(values)
+      raise ArgumentError, "values must be a Hash, you provided #{values.class}" unless values.kind_of? Hash
+      values.with_indifferent_access.each do |key, value|
+        if self.class.properties.keys.include?(key)
+          set_value(rdf_subject, key, value)
+        elsif nested_attributes_options.keys.map{ |k| "#{k}_attributes"}.include?(key)
+          send("#{key}=".to_sym, value)
+        end
+      end
     end
 
     def rdf_subject
@@ -213,6 +225,14 @@ module ActiveFedora::Rdf
       node? ? rdf_label : rdf_subject.to_s
     end
 
+    def mark_for_destruction
+      @marked_for_destruction = true
+    end
+
+    def marked_for_destruction?
+      @marked_for_destruction
+    end
+
     private
 
     def properties
@@ -229,12 +249,6 @@ module ActiveFedora::Rdf
         return property if values[:predicate] == predicate
       end
       return nil
-    end
-
-    def class_for_property(property)
-      klass = properties[property][:class_name] if properties.include? property
-      klass ||= ActiveFedora::Rdf::RdfResource
-      klass
     end
 
     def default_labels
@@ -256,23 +270,6 @@ module ActiveFedora::Rdf
           ActiveFedora::Rdf::RdfRepositories.repositories[self.class.repository]
         end
       end
-    end
-
-    def node_cache
-      @node_cache ||= {}
-    end
-
-    ##
-    # Build a child resource or return it from this object's cache
-    #
-    # Builds the resource from the class_name specified for the
-    # property.
-    def make_node(property, value)
-      klass = class_for_property(property)
-      return node_cache[value] if node_cache[value]
-      node = klass.from_uri(value,self)
-      node_cache[value] = node
-      return node
     end
 
   end
