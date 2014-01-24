@@ -16,6 +16,7 @@ module ActiveFedora::Rdf
     def result
       result = node_result if parent.node?
       result ||= standard_result
+      result = result.reject(&:nil?)
       return result if !property_config || property_config[:multivalue]
       result.first
     end
@@ -23,10 +24,16 @@ module ActiveFedora::Rdf
     def set(values)
       values = Array.wrap(values)
       parent.delete([rdf_subject, predicate, nil])
+      if parent.node?
+        parent.statements.each do |statement|
+          parent.send(:delete_statement, statement) if statement.subject == rdf_subject && statement.predicate == predicate
+        end
+      end
       values.each do |val|
         val = RDF::Literal(val) if val.kind_of? String
         val = val.resource if val.respond_to?(:resource)
         if val.kind_of? RdfResource
+          node_cache[val.rdf_subject] = nil
           add_child_node(val)
           next
         end
@@ -35,6 +42,7 @@ module ActiveFedora::Rdf
             val.kind_of? RDF::Value or val.kind_of? RDF::Literal
         parent.insert [rdf_subject, predicate, val]
       end
+      parent.persist! if parent.class.repository == :parent && parent.send(:repository)
     end
 
     def build(attributes={})
@@ -42,6 +50,11 @@ module ActiveFedora::Rdf
       node = make_node(new_subject)
       node.attributes = attributes
       self.push node
+      node
+    end
+
+    def first_or_create(attributes={})
+      result.first || build(attributes)
     end
 
     def delete(*values)

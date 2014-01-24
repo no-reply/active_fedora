@@ -2,14 +2,13 @@ require 'spec_helper'
 
 describe "Nested Rdf Objects" do
   describe "without type" do
-    before(:each) do 
+    before(:each) do
       class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
         map_predicates do |map|
           map.parts(:in=> RDF::DC, :to=>'hasPart', :class_name=>'Component')
         end
 
-        class Component
-          include ActiveFedora::RdfObject
+        class Component < ActiveFedora::Rdf::RdfResource
           map_predicates do |map|
             map.label(:in=> RDF::DC, :to=>'title')
           end
@@ -17,7 +16,7 @@ describe "Nested Rdf Objects" do
       end
 
     end
-    
+
     after(:each) do
       Object.send(:remove_const, :SpecDatastream)
     end
@@ -45,7 +44,7 @@ describe "Nested Rdf Objects" do
       ds.parts = ["foo"]
       expect {ds.parts.inspect}.to raise_error(ArgumentError, "Expected the value of http://purl.org/dc/terms/hasPart to be an RDF object but it is a String \"foo\"")
     end
-    
+
     it "should be able to nest a complex object" do
       comp = SpecDatastream::Component.new(ds.graph)
       comp.label = ["Alternator"]
@@ -139,15 +138,14 @@ END
 
 
   describe "with type" do
-    describe "one class per assertion" do 
-      before(:each) do 
+    describe "one class per assertion" do
+      before(:each) do
         class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
           map_predicates do |map|
             map.mediator(:in=> RDF::DC, :class_name=>'MediatorUser')
           end
 
-          class MediatorUser
-            include ActiveFedora::RdfObject
+          class MediatorUser < ActiveFedora::Rdf::RdfResource
             rdf_type RDF::DC.AgentClass
             map_predicates do |map|
               map.title(:in=> RDF::DC)
@@ -155,7 +153,7 @@ END
           end
         end
       end
-      
+
       after(:each) do
         Object.send(:remove_const, :SpecDatastream)
       end
@@ -194,28 +192,26 @@ END
     end
 
     describe "shared assertion to different classes" do
-      before(:each) do 
+      before(:each) do
         class EbuCore < RDF::Vocabulary("http://www.ebu.ch/metadata/ontologies/ebucore#")
           property :isEpisodeOf
           property :title
         end
-        
+
         class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
           map_predicates do |map|
             map.series(:to => 'isEpisodeOf', :in=> EbuCore, :class_name=>'Series')
             map.program(:to => 'isEpisodeOf', :in=> EbuCore, :class_name=>'Program')
           end
 
-          class Series
-            include ActiveFedora::RdfObject
+          class Series < ActiveFedora::Rdf::RdfResource
             rdf_type 'http://www.ebu.ch/metadata/ontologies/ebucore#Series'
             map_predicates do |map|
               map.title(:in=> EbuCore)
             end
           end
 
-          class Program 
-            include ActiveFedora::RdfObject
+          class Program  < ActiveFedora::Rdf::RdfResource
             rdf_type 'http://www.ebu.ch/metadata/ontologies/ebucore#Programme'
             map_predicates do |map|
               map.title(:in=> EbuCore)
@@ -224,7 +220,7 @@ END
         end
 
       end
-      
+
       after(:each) do
         Object.send(:remove_const, :SpecDatastream)
       end
@@ -245,9 +241,9 @@ END
         ds.program = program
 
         ds.program.first.type.size.should == 1
-        ds.program.first.type.first.to_s.should == 'http://www.ebu.ch/metadata/ontologies/ebucore#Programme' 
+        ds.program.first.type.first.to_s.should == 'http://www.ebu.ch/metadata/ontologies/ebucore#Programme'
         ds.series.first.type.size.should == 1
-        ds.series.first.type.first.to_s.should == 'http://www.ebu.ch/metadata/ontologies/ebucore#Series' 
+        ds.series.first.type.first.to_s.should == 'http://www.ebu.ch/metadata/ontologies/ebucore#Series'
       end
 
       it "should create an object of the correct type" do

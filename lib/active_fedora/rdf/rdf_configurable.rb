@@ -22,6 +22,10 @@ module ActiveFedora::Rdf
       nil
     end
 
+    def rdf_type(value)
+      configure :type => value
+    end
+
     def repository
       :parent
     end

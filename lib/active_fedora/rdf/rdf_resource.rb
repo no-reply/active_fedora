@@ -46,6 +46,16 @@ module ActiveFedora::Rdf
       reload
     end
 
+    def final_parent
+      @final_parent ||= begin
+        parent = self.parent
+        while parent && parent.parent && parent.parent != parent
+          parent = parent.parent
+        end
+        parent
+      end
+    end
+
     def attributes=(values)
       raise ArgumentError, "values must be a Hash, you provided #{values.class}" unless values.kind_of? Hash
       values.with_indifferent_access.each do |key, value|
@@ -107,8 +117,13 @@ module ActiveFedora::Rdf
 
     def persist!
       raise "failed when trying to persist to non-existant repository or parent resource" unless repository
-      each_statement do |s, p, o|
+      each_statement do |s,p,o|
         repository.delete [s, p, nil]
+      end
+      if node?
+        repository.statements.each do |statement|
+          repository.send(:delete_statement, statement) if statement.subject == rdf_subject
+        end
       end
       repository << self
       @persisted = true
@@ -121,9 +136,9 @@ module ActiveFedora::Rdf
     ##
     # Repopulates the graph from the repository or parent resource.
     def reload
-      @node_cache = {}
+      @term_cache ||= {}
       if self.class.repository == :parent
-        return false if parent.nil?
+        return false if final_parent.nil?
       end
       self << repository.query(:subject => rdf_subject)
       # need to query differently for blank nodes?
@@ -224,6 +239,25 @@ module ActiveFedora::Rdf
       end
     end
 
+    def destroy
+      clear
+      persist!
+      parent.destroy_child(self)
+    end
+
+    def destroy_child(child)
+      statements.each do |statement|
+        delete_statement(statement) if statement.subject == child.rdf_subject || statement.object == child.rdf_subject
+      end
+    end
+
+    def new_record?
+      if parent
+        return parent.new_record?
+      end
+      return true
+    end
+
     ##
     # @return [String] the string to index in solr
     #
@@ -272,7 +306,7 @@ module ActiveFedora::Rdf
     def repository
       @repository ||= begin
         if self.class.repository == :parent
-          parent
+          final_parent
         else
           ActiveFedora::Rdf::RdfRepositories.repositories[self.class.repository]
         end

@@ -33,23 +33,22 @@ describe "Nesting attribute behavior of RDFDatastream" do
 
           accepts_nested_attributes_for :topic, :personalName
 
-          class Topic
-            include ActiveFedora::RdfObject
+          class Topic < ActiveFedora::Rdf::RdfResource
             map_predicates do |map|
               map.elementList(in: DummyMADS, class_name:"ComplexRDFDatastream::ElementList")
             end
             accepts_nested_attributes_for :elementList
           end
-          class PersonalName
-            include ActiveFedora::RdfObject
+          class PersonalName < ActiveFedora::Rdf::RdfResource
             map_predicates do |map|
               map.elementList(in: DummyMADS, to: "elementList", class_name:"ComplexRDFDatastream::ElementList")
               map.extraProperty(in: DummyMADS, to: "elementValue", class_name:"ComplexRDFDatastream::Topic")
             end
             accepts_nested_attributes_for :elementList, :extraProperty
           end
-          class ElementList
-            include ActiveFedora::RdfList
+          class ElementList < ActiveFedora::Rdf::RdfResource
+            include ActiveFedora::Rdf::RdfList
+            self.list = :topicElement
             rdf_type DummyMADS.elementList
             map_predicates do |map|
               map.topicElement(in: DummyMADS, to: "TopicElement", :class_name => "MadsTopicElement")
@@ -61,8 +60,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
             end
             accepts_nested_attributes_for :topicElement
           end
-          class MadsTopicElement
-            include ActiveFedora::RdfObject
+          class MadsTopicElement < ActiveFedora::Rdf::RdfResource
             rdf_type DummyMADS.TopicElement
             map_predicates do |map|
               map.elementValue(in: DummyMADS)
@@ -132,7 +130,6 @@ describe "Nesting attribute behavior of RDFDatastream" do
           # topic = subject.topic.build
           # elem_list = topic.elementList.build
           # elem_list.fullNameElement = 'Cosmology'
-
           subject.topic[0].elementList.first[0].elementValue.should == ["Cosmology"]
           subject.topic[1].elementList.first[0].elementValue.should == ["Quantum Behavior"]
           subject.personalName.first.elementList.first.fullNameElement.should == ["Jefferson, Thomas"]
