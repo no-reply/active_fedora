@@ -151,6 +151,7 @@ describe ActiveFedora::Rdf::RdfResource do
     end
     it "should return values for other subjects if asked" do
       expect(subject.get_values(RDF::URI("http://opaquenamespace.org/jokes"),:title)).to eq []
+
       subject.set_value(RDF::URI("http://opaquenamespace.org/jokes"), RDF::DC.title, 'Comet in Moominland')
       expect(subject.get_values(RDF::URI("http://opaquenamespace.org/jokes"),:title)).to eq ["Comet in Moominland"]
     end

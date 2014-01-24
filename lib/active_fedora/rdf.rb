@@ -12,5 +12,6 @@ module ActiveFedora
     autoload :VocabularyLoader
     autoload :ObjectResource
     autoload :Term
+    autoload :RdfList
   end
 end
