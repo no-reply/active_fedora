@@ -64,6 +64,19 @@ module ActiveFedora::Rdf
     def reset!
     end
 
+    def property
+      value_arguments.last
+    end
+
+    def rdf_subject
+      raise ArgumentError("wrong number of arguments (#{value_arguments.length} for 1-2)") if value_arguments.length < 1 || value_arguments.length > 2
+      if value_arguments.length > 1
+        return value_arguments.first
+      else
+        return parent.rdf_subject
+      end
+    end
+
     private
 
     def node_cache
@@ -100,19 +113,6 @@ module ActiveFedora::Rdf
 
     def predicate
       parent.send(:predicate_for_property,property)
-    end
-
-    def property
-      value_arguments.last
-    end
-
-    def rdf_subject
-      raise ArgumentError("wrong number of arguments (#{value_arguments.length} for 1-2)") if value_arguments.length < 1 || value_arguments.length > 2
-      if value_arguments.length > 1
-        return value_arguments.first
-      else
-        return parent.rdf_subject
-      end
     end
 
     ##

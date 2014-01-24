@@ -177,8 +177,9 @@ module ActiveFedora::Rdf
 
     def get_term(args)
       @term_cache ||= {}
-      @term_cache[args.last] ||= ActiveFedora::Rdf::Term.new(self, args)
-      @term_cache[args.last]
+      term = ActiveFedora::Rdf::Term.new(self, args)
+      @term_cache["#{term.rdf_subject}/#{term.property}"] ||= term
+      @term_cache["#{term.rdf_subject}/#{term.property}"]
     end
 
     ##
