@@ -19,7 +19,7 @@ module ActiveFedora::Rdf
     extend RdfConfigurable
     extend RdfProperties
     include ActiveFedora::Rdf::NestedAttributes
-    attr_accessor :parent, :node_cache, :datastream
+    attr_accessor :parent, :datastream
 
     ##
     # Adapter for a consistent interface for creating a new node from a URI.
@@ -157,7 +157,7 @@ module ActiveFedora::Rdf
         raise ArgumentError("wrong number of arguments (#{args.length} for 2-3)")
       end
       values = args.pop
-      ActiveFedora::Rdf::Term.new(self, args).set(values)
+      get_term(args).set(values)
     end
 
     ##
@@ -172,7 +172,13 @@ module ActiveFedora::Rdf
     # passing the rdf_subject to be used in th statement:
     #    get_values(uri, property)
     def get_values(*args)
-      ActiveFedora::Rdf::Term.new(self, args)
+      get_term(args)
+    end
+
+    def get_term(args)
+      @term_cache ||= {}
+      @term_cache[args.last] ||= ActiveFedora::Rdf::Term.new(self, args)
+      @term_cache[args.last]
     end
 
     ##

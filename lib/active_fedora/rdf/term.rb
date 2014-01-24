@@ -1,6 +1,6 @@
 module ActiveFedora::Rdf
   class Term
-    attr_accessor :parent, :value_arguments
+    attr_accessor :parent, :value_arguments, :node_cache
     delegate *(Array.public_instance_methods - [:__send__, :__id__, :class, :object_id] + [:as_json]), :to => :result
     def initialize(parent, value_arguments)
       self.parent = parent
@@ -66,6 +66,10 @@ module ActiveFedora::Rdf
 
     private
 
+    def node_cache
+      @node_cache ||= {}
+    end
+
     def add_child_node(resource)
       parent.insert [rdf_subject, predicate, resource.rdf_subject]
       resource.parent = parent
@@ -119,9 +123,9 @@ module ActiveFedora::Rdf
     def make_node(value)
       klass = class_for_property
       value = RDF::Node.new if value.nil?
-      return parent.node_cache[value] if parent.node_cache[value]
+      return node_cache[value] if node_cache[value]
       node = klass.from_uri(value,parent)
-      parent.node_cache[value] = node
+      node_cache[value] = node
       return node
     end
 
