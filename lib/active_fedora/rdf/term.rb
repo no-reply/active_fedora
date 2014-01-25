@@ -30,7 +30,7 @@ module ActiveFedora::Rdf
         end
       end
       values.each do |val|
-        val = RDF::Literal(val) if val.kind_of? String
+        val = RDF::Literal(val) if valid_datatype? val
         val = val.resource if val.respond_to?(:resource)
         if val.kind_of? RdfResource
           node_cache[val.rdf_subject] = nil
@@ -38,7 +38,7 @@ module ActiveFedora::Rdf
           next
         end
         val = val.to_uri if val.respond_to? :to_uri
-        raise 'value must be an RDF URI, Node, Literal, or a plain string' unless
+        raise 'value must be an RDF URI, Node, Literal, or a valid datatype. See RDF::Literal' unless
             val.kind_of? RDF::Value or val.kind_of? RDF::Literal
         parent.insert [rdf_subject, predicate, val]
       end
@@ -106,8 +106,8 @@ module ActiveFedora::Rdf
       values = []
       parent.query(:subject => rdf_subject, :predicate => predicate).each_statement do |statement|
         value = statement.object
-        value = value.to_s if value.kind_of? RDF::Literal
-        value = make_node(value) if value.kind_of? RDF::Value
+        value = value.object if value.kind_of? RDF::Literal
+        value = make_node(value) if value.kind_of? RDF::Resource
         values << value unless value.nil?
       end
       return values
@@ -117,8 +117,8 @@ module ActiveFedora::Rdf
       values = []
       parent.each_statement do |statement|
         value = statement.object if statement.subject == rdf_subject && statement.predicate == predicate
-        value = value.to_s if value.kind_of? RDF::Literal
-        value = make_node(value) if value.kind_of? RDF::Value
+        value = value.object if value.kind_of? RDF::Literal
+        value = make_node(value) if value.kind_of? RDF::Resource
         values << value unless value.nil?
       end
       return values
@@ -126,6 +126,10 @@ module ActiveFedora::Rdf
 
     def predicate
       parent.send(:predicate_for_property,property)
+    end
+
+    def valid_datatype?(val)
+      val.is_a? String or val.is_a? Date or val.is_a? Time or val.is_a? Numeric or val.is_a? Symbol or val == !!val
     end
 
     ##

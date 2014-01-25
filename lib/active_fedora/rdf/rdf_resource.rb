@@ -177,8 +177,8 @@ module ActiveFedora::Rdf
 
     ##
     # Returns an array of values belonging to the property
-    # requested. Elements in the array may be strings or RdfResource
-    # objects.
+    # requested. Elements in the array may RdfResource objects or a
+    # valid datatype.
     #
     # Handles two argument patterns. The recommended pattern is:
     #    get_values(property)
