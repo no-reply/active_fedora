@@ -26,7 +26,7 @@ module ActiveFedora
     def metadata?
       true
     end
-
+    
     def content
       serialize
     end
@@ -71,7 +71,6 @@ module ActiveFedora
 
     alias_method :graph, :resource
 
-
     ##
     # This method allows for delegation.
     # This patches the fact that there's no consistent API for allowing delegation - we're matching the
@@ -90,7 +89,7 @@ module ActiveFedora
     end
 
     def serialize
-      resource.set_subject!(pid) if digital_object and pid and rdf_subject.node?
+      resource.set_subject!(pid) if (digital_object or pid) and rdf_subject.node?
       resource.dump serialization_format
     end
 

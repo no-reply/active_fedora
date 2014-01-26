@@ -68,22 +68,22 @@ describe ActiveFedora::RdfxmlRDFDatastream do
 
         after_initialize :type_resource
         def type_resource
-          graph.insert([RDF::URI.new(about), RDF.type, DAMS.Object])
+          graph.insert([rdf_subject, RDF.type, DAMS.Object])
         end
 
-        def content=(content)
-          super
-          @about = graph.statements.first.subject
-        end
-        class Description
-          include ActiveFedora::RdfObject
-          map_predicates do |map|
-            rdf_type DAMS.Description
-            map.value(:in=> RDF) do |index|
-              index.as :searchable
-            end
-          end
-        end
+        # def content=(content)
+        #   super
+        #   @about = graph.statements.first.subject
+        # end
+        # class Description
+        #   include ActiveFedora::RdfObject
+        #   map_predicates do |map|
+        #     rdf_type DAMS.Description
+        #     map.value(:in=> RDF) do |index|
+        #       index.as :searchable
+        #     end
+        #   end
+        # end
       end
     end
 

@@ -219,6 +219,8 @@ module ActiveFedora::Rdf
         @rdf_subject = uri_or_str.to_uri
       elsif uri_or_str.to_s.start_with? '_:'
         @rdf_subject = RDF::Node(uri_or_str.to_s[2..-1])
+      elsif uri_or_str.to_s.start_with? 'http://' or uri_or_str.to_s.start_with? 'info:fedora/'
+        @rdf_subject = RDF::URI(uri_or_str.to_s)
       elsif base_uri && !uri_or_str.to_s.start_with?(base_uri.to_s)
         separator = self.base_uri.to_s[-1,1] =~ /(\/|#)/ ? '' : '/'
         @rdf_subject = RDF::URI.intern(self.base_uri.to_s + separator + uri_or_str.to_s)

@@ -176,7 +176,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
       end
       it "create a new object when the id is provided" do
        subject.parts_attributes= [{id: 'http://example.com/part#1', label: "Universal Joint"}]
-       subject.parts.last.rdf_subject.should == 'http://example.com/part#1'
+       subject.parts.last.rdf_subject.should == RDF::URI('http://example.com/part#1')
       end
     end
   end
