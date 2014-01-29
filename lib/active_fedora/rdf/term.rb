@@ -22,7 +22,11 @@ module ActiveFedora::Rdf
 
     def set(values)
       values = Array.wrap(values)
-      parent.delete([rdf_subject, predicate, nil])
+      parent.query([rdf_subject, predicate, nil]).each_statement do |statement|
+        if !uri_class(statement.object) || uri_class(statement.object) == class_for_property
+          parent.delete(statement)
+        end
+      end
       values.each do |val|
         val = RDF::Literal(val) if valid_datatype? val
         val = val.resource if val.respond_to?(:resource)
@@ -65,7 +69,12 @@ module ActiveFedora::Rdf
     alias_method :push, :<<
 
     def property_config
+      return type_property if (property == RDF.type || property.to_s == "type") && !parent.send(:properties)[property]
       parent.send(:properties)[property]
+    end
+
+    def type_property
+      {:multivalue => true, :predicate => RDF.type}
     end
 
     def reset!
@@ -84,7 +93,7 @@ module ActiveFedora::Rdf
       end
     end
 
-    protected
+   # protected
 
     def node_cache
       @node_cache ||= {}
@@ -109,7 +118,8 @@ module ActiveFedora::Rdf
     end
 
     def predicate
-      parent.send(:predicate_for_property,property)
+      return property_config[:predicate] unless property.kind_of? RDF::URI
+      return property
     end
 
     def valid_datatype?(val)
@@ -122,11 +132,12 @@ module ActiveFedora::Rdf
     # Builds the resource from the class_name specified for the
     # property.
     def make_node(value)
-      klass = class_for_property
+      klass = class_for_value(value)
       value = RDF::Node.new if value.nil?
-      return node_cache[value] if node_cache[value]
-      node = klass.from_uri(value,parent)
-      self.node_cache[value] = node
+      node = node_cache[value] if node_cache[value]
+      node ||= klass.from_uri(value,parent)
+      return nil if property_config[:class_name] && class_for_value(value) != class_for_property
+      self.node_cache[value] ||= node
       return node
     end
 
@@ -141,6 +152,16 @@ module ActiveFedora::Rdf
         end
         parent
       end
+    end
+
+    def class_for_value(v)
+      uri_class(v) || class_for_property
+    end
+
+    def uri_class(v)
+      v = RDF::URI.new(v) if v.kind_of? String
+      type_uri = parent.query([v, RDF.type, nil]).to_a.first.try(:object)
+      return ActiveFedora::Rdf::RdfResource.type_registry[type_uri]
     end
 
     def class_for_property

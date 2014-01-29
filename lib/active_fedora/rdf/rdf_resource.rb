@@ -16,10 +16,15 @@ module ActiveFedora::Rdf
   #      end
   #    end
   class RdfResource < RDF::Graph
+    @@type_registry
     extend RdfConfigurable
     extend RdfProperties
     include ActiveFedora::Rdf::NestedAttributes
     attr_accessor :parent, :datastream
+
+    def self.type_registry
+      @@type_registry ||= {}
+    end
 
     ##
     # Adapter for a consistent interface for creating a new node from a URI.
@@ -44,6 +49,8 @@ module ActiveFedora::Rdf
       set_subject!(resource_uri) if resource_uri
       super(*args, &block)
       reload
+      # Append type to graph if necessary.
+      self.get_values(:type) << self.class.type if self.class.type.kind_of?(RDF::URI) && type.empty?
     end
 
     def final_parent
@@ -81,12 +88,11 @@ module ActiveFedora::Rdf
     end
 
     def type
-      @type ||= self.class.type
+      return self.get_values(:type).to_a.map{|x| x.rdf_subject}
     end
 
     def type=(type)
       raise "Type must be an RDF::URI" unless type.kind_of? RDF::URI
-      @type = type
       self.update(RDF::Statement.new(rdf_subject, RDF.type, type))
     end
 
@@ -104,7 +110,7 @@ module ActiveFedora::Rdf
     end
 
     def fields
-      properties.keys.map(&:to_sym)
+      properties.keys.map(&:to_sym).reject{|x| x == :type}
     end
 
     ##
@@ -144,7 +150,6 @@ module ActiveFedora::Rdf
       unless empty?
         @persisted = true
       end
-      self.type = type if type.kind_of? RDF::URI
       true
     end
 
@@ -211,7 +216,11 @@ module ActiveFedora::Rdf
       if uri_or_str.respond_to? :to_uri
         @rdf_subject = uri_or_str.to_uri
       elsif uri_or_str.to_s.start_with? '_:'
-        @rdf_subject = RDF::Node(uri_or_str.to_s[2..-1])
+        if uri_or_str.kind_of?(RDF::Node)
+          @rdf_subject = uri_or_str
+        else
+          @rdf_subject = RDF::Node(uri_or_str.to_s[2..-1])
+        end
       elsif uri_or_str.to_s.start_with? 'http://' or uri_or_str.to_s.start_with? 'info:fedora/'
         @rdf_subject = RDF::URI(uri_or_str.to_s)
       elsif base_uri && !uri_or_str.to_s.start_with?(base_uri.to_s)
@@ -273,11 +282,6 @@ module ActiveFedora::Rdf
 
     def properties
       self.singleton_class.properties
-    end
-
-    def predicate_for_property(property)
-      return properties[property][:predicate] unless property.kind_of? RDF::URI
-      return property
     end
 
     def property_for_predicate(predicate)
