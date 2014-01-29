@@ -14,7 +14,6 @@ module ActiveFedora::Rdf
     end
 
     def result
-      result = node_result if parent.node?
       result ||= standard_result
       result = result.reject(&:nil?)
       return result if !property_config || property_config[:multivalue]
@@ -24,11 +23,6 @@ module ActiveFedora::Rdf
     def set(values)
       values = Array.wrap(values)
       parent.delete([rdf_subject, predicate, nil])
-      if parent.node?
-        parent.statements.each do |statement|
-          parent.send(:delete_statement, statement) if statement.subject == rdf_subject && statement.predicate == predicate
-        end
-      end
       values.each do |val|
         val = RDF::Literal(val) if valid_datatype? val
         val = val.resource if val.respond_to?(:resource)
@@ -90,7 +84,7 @@ module ActiveFedora::Rdf
       end
     end
 
-    private
+    protected
 
     def node_cache
       @node_cache ||= {}
@@ -99,6 +93,7 @@ module ActiveFedora::Rdf
     def add_child_node(resource)
       parent.insert [rdf_subject, predicate, resource.rdf_subject]
       resource.parent = parent
+      self.node_cache[resource.rdf_subject] = resource
       resource.persist! if resource.class.repository == :parent
     end
 
@@ -106,17 +101,6 @@ module ActiveFedora::Rdf
       values = []
       parent.query(:subject => rdf_subject, :predicate => predicate).each_statement do |statement|
         value = statement.object
-        value = value.object if value.kind_of? RDF::Literal
-        value = make_node(value) if value.kind_of? RDF::Resource
-        values << value unless value.nil?
-      end
-      return values
-    end
-
-    def node_result
-      values = []
-      parent.each_statement do |statement|
-        value = statement.object if statement.subject == rdf_subject && statement.predicate == predicate
         value = value.object if value.kind_of? RDF::Literal
         value = make_node(value) if value.kind_of? RDF::Resource
         values << value unless value.nil?
@@ -142,7 +126,7 @@ module ActiveFedora::Rdf
       value = RDF::Node.new if value.nil?
       return node_cache[value] if node_cache[value]
       node = klass.from_uri(value,parent)
-      node_cache[value] = node
+      self.node_cache[value] = node
       return node
     end
 
