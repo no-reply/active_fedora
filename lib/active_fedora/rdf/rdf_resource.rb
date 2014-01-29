@@ -141,13 +141,6 @@ module ActiveFedora::Rdf
         return false if final_parent.nil?
       end
       self << repository.query(:subject => rdf_subject)
-      # need to query differently for blank nodes?
-      # Is there a solution which deals with both cases without iterating through potentially large repositories?
-      if rdf_subject.node?
-        repository.each_statement do |s|
-          self << s if s.subject == rdf_subject
-        end
-      end
       unless empty?
         @persisted = true
       end
