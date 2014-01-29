@@ -159,12 +159,12 @@ describe ActiveFedora::Rdf::RdfResource do
 
   describe '#type' do
     it 'should return the type configured on the parent class' do
-      expect(subject.type).to eq DummyResource.type
+      expect(subject.type).to eq [DummyResource.type]
     end
 
     it 'should set the type' do
       subject.type = RDF::URI('http://example.org/AnotherClass')
-      expect(subject.type).to eq RDF::URI('http://example.org/AnotherClass')
+      expect(subject.type).to eq [RDF::URI('http://example.org/AnotherClass')]
     end
 
     it 'should be the type in the graph' do

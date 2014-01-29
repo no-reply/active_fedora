@@ -23,7 +23,8 @@ module ActiveFedora::Rdf
     end
 
     def rdf_type(value)
-      configure :type => value
+      ActiveFedora::Rdf::RdfResource.type_registry[RDF::URI.new(value)] = self
+      configure :type => RDF::URI.new(value)
     end
 
     def repository
