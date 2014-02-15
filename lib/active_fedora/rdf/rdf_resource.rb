@@ -82,6 +82,10 @@ module ActiveFedora::Rdf
       return true if rdf_subject.kind_of? RDF::Node
       false
     end
+    
+    def to_term
+      rdf_subject
+    end
 
     def base_uri
       self.class.base_uri

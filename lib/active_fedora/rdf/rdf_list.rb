@@ -1,13 +1,19 @@
 module ActiveFedora::Rdf
   class RdfList < RDF::List
     include ActiveFedora::Rdf::NestedAttributes
+    extend RdfConfigurable
     extend RdfProperties
 
-    delegate :rdf_subject, :set_value, :get_values, :attributes=, :to => :resource    
+    delegate :rdf_subject, :set_value, :get_values, :attributes=, :to => :resource
+    alias_method :to_ary, :to_a
     
     def initialize(*args)
       super
       @graph = ListResource.new(subject) << graph
+      graph.singleton_class.properties = self.class.properties
+      graph.singleton_class.properties.keys.each do |property|
+        graph.singleton_class.send(:register_property, property)
+      end
     end
 
     def resource
@@ -15,8 +21,14 @@ module ActiveFedora::Rdf
     end
 
     def []=(idx, value)
-      raise IndexError if idx < 0 or idx > length
-      return self << value if idx == length
+      raise IndexError "index #{idx} too small for array: minimum 0" if idx < 0
+
+      if idx >= length
+        (idx - length).times do 
+          self << RDF::OWL.Nothing
+        end
+        return self << value
+      end
       each_subject.with_index do |v, i|
         puts v
         graph.update RDF::Statement(v, RDF.first, value) if i == idx

@@ -46,9 +46,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
             end
             accepts_nested_attributes_for :elementList, :extraProperty
           end
-          class ElementList < ActiveFedora::Rdf::RdfResource
-            include ActiveFedora::Rdf::RdfList
-            self.list = :topicElement
+          class ElementList < ActiveFedora::Rdf::RdfList
             rdf_type DummyMADS.elementList
             map_predicates do |map|
               map.topicElement(in: DummyMADS, to: "TopicElement", :class_name => "MadsTopicElement")

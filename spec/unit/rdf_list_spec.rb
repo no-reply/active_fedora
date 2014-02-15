@@ -14,22 +14,19 @@ describe ActiveFedora::RdfList do
       map_predicates do |map|
         map.elementList(:in => MADS, :to => 'elementList', :class_name=>'List')
       end 
-      class List 
-        include ActiveFedora::RdfList
+      class List < ActiveFedora::Rdf::RdfList
         map_predicates do |map|
           map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "TopicElement")
           map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "TemporalElement")
         end
           
-        class TopicElement
-          include ActiveFedora::RdfObject
+        class TopicElement < ActiveFedora::Rdf::RdfResource
           rdf_type MADS.TopicElement
           map_predicates do |map|   
             map.elementValue(:in=> MADS)
           end
         end
-        class TemporalElement
-          include ActiveFedora::RdfObject
+        class TemporalElement < ActiveFedora::Rdf::RdfResource
           rdf_type MADS.TemporalElement
           map_predicates do |map|   
             map.elementValue(:in=> MADS)
@@ -50,24 +47,24 @@ describe ActiveFedora::RdfList do
     it "should insert at the end" do
       subject.should be_kind_of DemoList::List
       subject.size.should == 0
-      subject[1] = DemoList::List::TopicElement.new(subject.graph)
+      subject[1] = DemoList::List::TopicElement.new
       subject.size.should == 2
     end
 
     it "should insert at the head" do
       subject.should be_kind_of DemoList::List
       subject.size.should == 0
-      subject[0] = DemoList::List::TopicElement.new(subject.graph)
+      subject[0] = DemoList::List::TopicElement.new
       subject.size.should == 1
     end
 
     describe "that has 4 elements" do
       before do
-        subject[3] = DemoList::List::TopicElement.new(subject.graph)
+        subject[3] = DemoList::List::TopicElement.new
         subject.size.should == 4
       end
       it "should insert in the middle" do
-        subject[1] = DemoList::List::TopicElement.new(subject.graph)
+        subject[1] = DemoList::List::TopicElement.new
         subject.size.should == 4
       end
     end
@@ -75,10 +72,10 @@ describe ActiveFedora::RdfList do
     describe "return updated xml" do
       it "should be built" do
         subject[0] = RDF::URI.new "http://library.ucsd.edu/ark:/20775/bbXXXXXXX6"
-        subject[1] = DemoList::List::TopicElement.new(ds.graph)
+        subject[1] = DemoList::List::TopicElement.new
         subject[1].elementValue = "Relations with Mexican Americans"
         subject[2] = RDF::URI.new "http://library.ucsd.edu/ark:/20775/bbXXXXXXX4"
-        subject[3] = DemoList::List::TemporalElement.new(ds.graph)
+        subject[3] = DemoList::List::TemporalElement.new
         subject[3].elementValue = "20th century"
         doc = Nokogiri::XML(ds.content)
         ns = {rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#", mads: "http://www.loc.gov/mads/rdf/v1#"}
@@ -90,8 +87,6 @@ describe ActiveFedora::RdfList do
         expect(doc.xpath('//rdf:Description/mads:elementList/*[position() = 4]/mads:elementValue', ns).map(&:text)).to eq ["20th century"]
       end
     end
-
-
   end
 
   describe "an empty list" do
@@ -142,7 +137,7 @@ describe ActiveFedora::RdfList do
         </mads:ComplexSubject>
       </rdf:RDF>
 END
-
+      
       subject
     end
     it "should have a subject" do
