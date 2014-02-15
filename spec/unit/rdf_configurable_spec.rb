@@ -1,8 +1,8 @@
 require "spec_helper"
-describe Rdf::RdfConfigurable do
+describe Rdf::Configurable do
   before(:each) do
     class DummyConfigurable
-      extend Rdf::RdfConfigurable
+      extend Rdf::Configurable
     end
   end
   after(:each) do

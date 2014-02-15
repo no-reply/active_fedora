@@ -30,7 +30,7 @@ module ActiveFedora::Rdf
       values.each do |val|
         val = RDF::Literal(val) if valid_datatype? val
         val = val.resource if val.respond_to?(:resource)
-        if val.kind_of? RdfResource
+        if val.kind_of? Resource
           node_cache[val.rdf_subject] = nil
           add_child_node(val)
           next
@@ -161,12 +161,12 @@ module ActiveFedora::Rdf
     def uri_class(v)
       v = RDF::URI.new(v) if v.kind_of? String
       type_uri = parent.query([v, RDF.type, nil]).to_a.first.try(:object)
-      return ActiveFedora::Rdf::RdfResource.type_registry[type_uri]
+      return ActiveFedora::Rdf::Resource.type_registry[type_uri]
     end
 
     def class_for_property
       klass = property_config[:class_name]
-      klass ||= ActiveFedora::Rdf::RdfResource
+      klass ||= ActiveFedora::Rdf::Resource
       klass = ActiveFedora.class_from_string(klass, final_parent.class) if klass.kind_of? String
       klass
     end

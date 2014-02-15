@@ -1,8 +1,8 @@
 require "spec_helper"
-describe Rdf::RdfProperties do
+describe Rdf::Properties do
   before(:each) do
     class DummyProperties
-      extend Rdf::RdfProperties
+      extend Rdf::Properties
     end
   end
   after(:each) do

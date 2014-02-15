@@ -1,5 +1,5 @@
 module ActiveFedora::Rdf
-  module RdfConfigurable
+  module Configurable
     ##
     # Module to include configurable class-wide properties common to RdfResource
     # and RdfResourceDatastream. It does its work at the class level, and
@@ -23,7 +23,7 @@ module ActiveFedora::Rdf
     end
 
     def rdf_type(value)
-      ActiveFedora::Rdf::RdfResource.type_registry[RDF::URI.new(value)] = self
+      ActiveFedora::Rdf::Resource.type_registry[RDF::URI.new(value)] = self
       configure :type => RDF::URI.new(value)
     end
 

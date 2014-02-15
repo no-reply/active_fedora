@@ -1,8 +1,8 @@
 module ActiveFedora::Rdf
-  class RdfList < RDF::List
+  class List < RDF::List
     include ActiveFedora::Rdf::NestedAttributes
-    extend RdfConfigurable
-    extend RdfProperties
+    extend Configurable
+    extend Properties
 
     delegate :rdf_subject, :set_value, :get_values, :attributes=, :to => :resource
     alias_method :to_ary, :to_a
@@ -40,7 +40,7 @@ module ActiveFedora::Rdf
       self.new(list.rdf_subject, list)
     end
 
-    class ListResource < RdfResource
+    class ListResource < Rdf::Resource
     end
 
     ##

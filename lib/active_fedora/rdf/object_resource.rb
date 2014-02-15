@@ -4,7 +4,7 @@ module ActiveFedora::Rdf
   # with a Datastream and ActiveFedora::Base object.
   #
   # @see OregonDigital::RdfResourceDatastream
-  class ObjectResource < RdfResource
+  class ObjectResource < Resource
     configure :base_uri => 'info:fedora/'
   end
 end

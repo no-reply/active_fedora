@@ -15,7 +15,7 @@ module ActiveFedora::Rdf
   #    end
   #
   # You can pass a block to either to set index behavior.
-  module RdfProperties
+  module Properties
     attr_accessor :properties
 
     ##

@@ -1,6 +1,6 @@
 require "spec_helper"
-describe Rdf::RdfRepositories do
-  subject {Rdf::RdfRepositories}
+describe Rdf::Repositories do
+  subject {Rdf::Repositories}
 
   after(:each) do
     subject.clear_repositories!

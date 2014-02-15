@@ -66,7 +66,7 @@ describe ActiveFedora::RdfxmlRDFDatastream do
           super
         end
 
-        class Description < ActiveFedora::Rdf::RdfResource
+        class Description < ActiveFedora::Rdf::Resource
           map_predicates do |map|
             rdf_type DAMS.Description
             map.value(:in=> RDF) do |index|

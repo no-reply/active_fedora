@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe ActiveFedora::RDFDatastream do
   before(:each) do
-    class DummySubnode < ActiveFedora::Rdf::RdfResource
+    class DummySubnode < ActiveFedora::Rdf::Resource
       property :title, :predicate => RDF::DC[:title], :class_name => RDF::Literal
       property :relation, :predicate => RDF::DC[:relation]
     end
@@ -22,7 +22,7 @@ describe ActiveFedora::RDFDatastream do
       end
     end
     class DummyAsset < ActiveFedora::Base
-      include ActiveFedora::Rdf::RdfIdentifiable
+      include ActiveFedora::Rdf::Identifiable
       has_metadata :name => 'descMetadata', :type => DummyResource
       #delegate :title, :to => :descMetadata, :multiple => true
       has_attributes :title, datastream: 'descMetadata', multiple: true

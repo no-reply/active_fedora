@@ -15,10 +15,10 @@ module ActiveFedora::Rdf
   #        index.as :displayable, :facetable
   #      end
   #    end
-  class RdfResource < RDF::Graph
+  class Resource < RDF::Graph
     @@type_registry
-    extend RdfConfigurable
-    extend RdfProperties
+    extend Configurable
+    extend Properties
     include ActiveFedora::Rdf::NestedAttributes
     attr_accessor :parent, :datastream
 
@@ -315,7 +315,7 @@ module ActiveFedora::Rdf
         if self.class.repository == :parent
           final_parent
         else
-          ActiveFedora::Rdf::RdfRepositories.repositories[self.class.repository]
+          ActiveFedora::Rdf::Repositories.repositories[self.class.repository]
         end
       end
     end

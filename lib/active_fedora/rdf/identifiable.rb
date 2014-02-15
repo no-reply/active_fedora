@@ -1,6 +1,5 @@
 ##
-# This module is included to allow for an ActiveFedora::Base object to be set as the class_name for an
-# RdfResource.
+# This module is included to allow for an ActiveFedora::Base object to be set as the class_name for a Resource.
 # Enables functionality like:
 #   base = ActiveFedora::Base.new('oregondigital:1')
 #   base.title = 'test'
@@ -8,7 +7,7 @@
 #   subject.descMetadata.set = base
 #   subject.descMetadata.set # => <ActiveFedora::Base>
 #   subject.descMetadata.set.title # => 'test'
-module ActiveFedora::Rdf::RdfIdentifiable
+module ActiveFedora::Rdf::Identifiable
   extend ActiveSupport::Concern
   ##
   # Defines which resource defines this ActiveFedora object.

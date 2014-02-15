@@ -2,7 +2,7 @@ module ActiveFedora
   class RDFDatastream < ActiveFedora::Datastream
     include Solrizer::Common
     include ActiveFedora::Rdf::NestedAttributes
-    extend Rdf::RdfProperties
+    extend Rdf::Properties
 
     delegate :rdf_subject, :set_value, :get_values, :attributes=, :to => :resource
 
@@ -114,7 +114,7 @@ module ActiveFedora
         if values
           Array.wrap(values).each do |val|
             val = val.to_s if val.kind_of? RDF::URI
-            val = val.solrize if val.kind_of? Rdf::RdfResource
+            val = val.solrize if val.kind_of? Rdf::Resource
             self.class.create_and_insert_terms(prefix(field_key), val, field_info[:behaviors], solr_doc)
           end
         end

@@ -14,7 +14,7 @@ module ActiveFedora::Rdf
   # RdfResource at the class level.
   #
   # @see RdfConfigurable
-  module RdfRepositories
+  module Repositories
 
     def add_repository(name, repo)
       raise "Repositories must be an RDF::Repository" unless repo.kind_of? RDF::Repository

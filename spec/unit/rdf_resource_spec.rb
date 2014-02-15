@@ -1,14 +1,14 @@
 require "spec_helper"
-describe ActiveFedora::Rdf::RdfResource do
+describe ActiveFedora::Rdf::Resource do
 
   before(:each) do
-    class DummyLicense < ActiveFedora::Rdf::RdfResource
+    class DummyLicense < ActiveFedora::Rdf::Resource
       map_predicates do |map|
         map.title(:in => RDF::DC)
       end
     end
 
-    class DummyResource < ActiveFedora::Rdf::RdfResource
+    class DummyResource < ActiveFedora::Rdf::Resource
       configure :type => RDF::URI('http://example.org/SomeClass')
       property :license, :predicate => RDF::DC.license, :class_name => DummyLicense
       map_predicates do |map|
@@ -214,49 +214,6 @@ describe ActiveFedora::Rdf::RdfResource do
       expect(subject.title).to eq []
     end
   end
-
-  # describe 'controlled vocabularies' do
-  #   before(:each) do
-  #     RDF_VOCABS[:dcmitype] = { :prefix => 'http://purl.org/dc/dcmitype/', :source => 'http://dublincore.org/2012/06/14/dctype.rdf' }
-  #     RDF_VOCABS[:geonames] = { :prefix => 'http://sws.geonames.org/', :strict => false, :fetch => false }
-  #     class DummyStrict < Rdf::RdfResource
-  #       include Rdf::Controlled
-  #       use_vocabulary :dcmitype
-  #     end
-  #     class DummyVocab < Rdf::RdfResource
-  #       include Rdf::Controlled
-  #       use_vocabulary :geonames
-  #     end
-  #     DummyResource.property(:type, :predicate => RDF::DC.type, :class_name => DummyStrict)
-  #     DummyResource.property(:geo, :predicate => RDF::DC.spatial, :class_name => DummyVocab)
-  #     subject.type = DummyStrict.new('Image')
-  #     subject.geo = DummyVocab.new('http://sws.geonames.org/5735237/')
-  #   end
-  #   after(:each) do
-  #     Object.send(:remove_const, 'DummyStrict') if Object
-  #     Object.send(:remove_const, 'DummyVocab') if Object
-  #   end
-
-  #   it 'should accept controlled terms' do
-  #     expect(subject.type.first).to be_kind_of DummyStrict
-  #   end
-  #   it 'should accept uncontrolled external terms' do
-  #     expect(subject.geo.first).to be_kind_of DummyVocab
-  #   end
-  #   it 'should load data for controlled terms' do
-  #     DummyStrict.load_vocabularies
-  #     subject.reload
-  #     expect(subject.type.first.has_subject?(RDF::URI('http://purl.org/dc/dcmitype/Image'))).to be_true
-  #   end
-  #   it 'should load data for uncontrolled external terms' do
-  #     subject.geo.first.fetch
-  #     expect(subject.geo.first.has_subject?(RDF::URI('http://sws.geonames.org/5735237/'))).to be_true
-  #   end
-  #   it 'should load data for uncontrolled external terms' do
-  #     subject.geo.first.fetch
-  #     expect(subject.geo.first.has_subject?(RDF::URI('http://sws.geonames.org/5735237/'))).to be_true
-  #   end
-  # end
 
   describe 'big complex graphs' do
     it 'should allow access to deep nodes'

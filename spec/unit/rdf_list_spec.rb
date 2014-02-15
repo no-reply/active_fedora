@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ActiveFedora::Rdf::RdfList do
+describe ActiveFedora::Rdf::List do
   before :each do
     class MADS < RDF::Vocabulary("http://www.loc.gov/mads/rdf/v1#")
       property :complexSubject
@@ -14,19 +14,19 @@ describe ActiveFedora::Rdf::RdfList do
       map_predicates do |map|
         map.elementList(:in => MADS, :to => 'elementList', :class_name=>'List')
       end 
-      class List < ActiveFedora::Rdf::RdfList
+      class List < ActiveFedora::Rdf::List
         map_predicates do |map|
           map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "TopicElement")
           map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "TemporalElement")
         end
           
-        class TopicElement < ActiveFedora::Rdf::RdfResource
+        class TopicElement < ActiveFedora::Rdf::Resource
           rdf_type MADS.TopicElement
           map_predicates do |map|   
             map.elementValue(:in=> MADS)
           end
         end
-        class TemporalElement < ActiveFedora::Rdf::RdfResource
+        class TemporalElement < ActiveFedora::Rdf::Resource
           rdf_type MADS.TemporalElement
           map_predicates do |map|   
             map.elementValue(:in=> MADS)

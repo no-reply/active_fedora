@@ -4,14 +4,14 @@ module ActiveFedora
     autoload :NestedAttributes
     autoload :NodeConfig
     autoload :Indexing
-    autoload :RdfConfigurable
-    autoload :RdfProperties
-    autoload :RdfIdentifiable
-    autoload :RdfRepositories
-    autoload :RdfResource
+    autoload :Configurable
+    autoload :Properties
+    autoload :Identifiable
+    autoload :Repositories
+    autoload :Resource
     autoload :VocabularyLoader
     autoload :ObjectResource
     autoload :Term
-    autoload :RdfList
+    autoload :List
   end
 end

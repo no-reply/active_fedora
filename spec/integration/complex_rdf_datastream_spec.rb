@@ -8,7 +8,7 @@ describe "Nested Rdf Objects" do
           map.parts(:in=> RDF::DC, :to=>'hasPart', :class_name=>'Component')
         end
 
-        class Component < ActiveFedora::Rdf::RdfResource
+        class Component < ActiveFedora::Rdf::Resource
           map_predicates do |map|
             map.label(:in=> RDF::DC, :to=>'title')
           end
@@ -145,7 +145,7 @@ END
             map.mediator(:in=> RDF::DC, :class_name=>'MediatorUser')
           end
 
-          class MediatorUser < ActiveFedora::Rdf::RdfResource
+          class MediatorUser < ActiveFedora::Rdf::Resource
             rdf_type RDF::DC.AgentClass
             map_predicates do |map|
               map.title(:in=> RDF::DC)
@@ -204,14 +204,14 @@ END
             map.program(:to => 'isEpisodeOf', :in=> EbuCore, :class_name=>'Program')
           end
 
-          class Series < ActiveFedora::Rdf::RdfResource
+          class Series < ActiveFedora::Rdf::Resource
             rdf_type 'http://www.ebu.ch/metadata/ontologies/ebucore#Series'
             map_predicates do |map|
               map.title(:in=> EbuCore)
             end
           end
 
-          class Program  < ActiveFedora::Rdf::RdfResource
+          class Program  < ActiveFedora::Rdf::Resource
             rdf_type 'http://www.ebu.ch/metadata/ontologies/ebucore#Programme'
             map_predicates do |map|
               map.title(:in=> EbuCore)
