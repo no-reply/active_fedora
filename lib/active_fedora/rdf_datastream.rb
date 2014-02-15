@@ -43,6 +43,10 @@ module ActiveFedora
       super
     end
 
+    def freeze
+      @resource.freeze
+    end
+
     # Utility method which can be overridden to determine the object
     # resource that is created.
     def resource_class

@@ -58,7 +58,7 @@ describe ActiveFedora::Base do
     it "should make the RDF properties immutable" do
       expect {
         subject.publisher = "HEY"
-      }.to raise_error RuntimeError, "can't modify frozen MyDatastream"
+      }.to raise_error TypeError
       expect(subject.publisher).to eq "Random House"
     end
 
