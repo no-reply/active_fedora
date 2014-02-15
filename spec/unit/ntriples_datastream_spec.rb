@@ -214,7 +214,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
           @obj.stub(:repository => repository, :pid => 'test:1')
           repository.stub(:modify_datastream)
           repository.stub(:add_datastream)
-        @obj.created = "2012-03-04"
+        @obj.created = Date.parse("2012-03-04")
         @obj.title = "Of Mice and Men, The Sequel"
         @obj.publisher = "Bob's Blogtastic Publishing"
         @obj.based_near = ["Tacoma, WA", "Renton, WA"]
