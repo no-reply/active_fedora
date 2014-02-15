@@ -33,7 +33,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
       @subject.dsid.should == 'descMetadata'
     end
     it "should have fields" do
-      @subject.created.should == ["2010-12-31"]
+      @subject.created.should == [Date.parse('2010-12-31')]
       @subject.title.should == ["Title of work"]
       @subject.publisher.should == ["Penn State"]
       @subject.based_near.should == ["New York, NY, US"]
