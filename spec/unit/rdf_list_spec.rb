@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ActiveFedora::RdfList do
+describe ActiveFedora::Rdf::RdfList do
   before :each do
     class MADS < RDF::Vocabulary("http://www.loc.gov/mads/rdf/v1#")
       property :complexSubject

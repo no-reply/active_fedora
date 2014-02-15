@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ActiveFedora::RdfList do
+describe ActiveFedora::Rdf::RdfList do
   before :each do
     class MADS < RDF::Vocabulary("http://www.loc.gov/mads/rdf/v1#")
       property :MADSScheme
@@ -14,23 +14,19 @@ describe ActiveFedora::RdfList do
       property :hasExactExternalAuthority
     end
 
-    class TopicElement
-      include ActiveFedora::RdfObject
+    class TopicElement < ActiveFedora::Rdf::RdfResource
       rdf_type MADS.TopicElement
       map_predicates do |map|
         map.elementValue(:in=> MADS)
       end
     end
-    class TemporalElement
-      include ActiveFedora::RdfObject
+    class TemporalElement < ActiveFedora::Rdf::RdfResource
       rdf_type MADS.TemporalElement
       map_predicates do |map|
         map.elementValue(:in=> MADS)
       end
     end
-    class ElementList
-      include ActiveFedora::RdfList
-      
+    class ElementList < ActiveFedora::Rdf::RdfList
       map_predicates do |map|
         map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "TopicElement")
         map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "TemporalElement")
@@ -38,8 +34,7 @@ describe ActiveFedora::RdfList do
       accepts_nested_attributes_for :topicElement, :temporalElement
     end
 
-    class Topic
-      include ActiveFedora::RdfObject
+    class Topic < ActiveFedora::Rdf::RdfResource
       rdf_type MADS.Topic
       rdf_subject { |ds| RDF::URI.new(Rails.configuration.id_namespace + ds.pid)}
       map_predicates do |map|
