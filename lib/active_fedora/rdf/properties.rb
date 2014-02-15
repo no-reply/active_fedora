@@ -24,17 +24,17 @@ module ActiveFedora::Rdf
     # @param [Hash]  opts for this property, must include a :predicate
     # @yield [index] index sets solr behaviors for the property
     def property(name, opts={}, &block)
-      config = ActiveFedora::Rdf::NodeConfig.new(name, opts[:predicate], opts.except(:predicate)).tap do |config|
+      config[name] = ActiveFedora::Rdf::NodeConfig.new(name, opts[:predicate], opts.except(:predicate)).tap do |config|
         config.with_index(&block) if block_given?
       end
-      behaviors = config.behaviors.flatten if config.behaviors and not config.behaviors.empty?
+      behaviors = config[name].behaviors.flatten if config[name].behaviors and not config[name].behaviors.empty?
       self.properties[name] = {
         :behaviors => behaviors,
-        :type => config.type,
-        :class_name => config.class_name,
-        :predicate => config.predicate,
-        :term => config.term,
-        :multivalue => config.multivalue
+        :type => config[name].type,
+        :class_name => config[name].class_name,
+        :predicate => config[name].predicate,
+        :term => config[name].term,
+        :multivalue => config[name].multivalue
       }
       register_property(name)
     end
@@ -45,6 +45,19 @@ module ActiveFedora::Rdf
       else
         {}.with_indifferent_access
       end
+    end
+
+    def config
+      @config ||= if superclass.respond_to? :config
+        superclass.properties.dup
+      else
+        {}.with_indifferent_access
+      end
+    end
+
+    def config_for_term_or_uri(term)
+      return config[term.to_sym] unless term.kind_of? RDF::Resource
+      config.each { |k, v| return v if v.predicate == term.to_uri }
     end
 
     def fields
