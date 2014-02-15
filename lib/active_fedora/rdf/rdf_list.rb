@@ -1,6 +1,10 @@
 module ActiveFedora::Rdf
   class RdfList < RDF::List
+    include ActiveFedora::Rdf::NestedAttributes
+    extend RdfProperties
 
+    delegate :rdf_subject, :set_value, :get_values, :attributes=, :to => :resource    
+    
     def initialize(*args)
       super
       @graph = ListResource.new(subject) << graph
@@ -9,6 +13,24 @@ module ActiveFedora::Rdf
     def resource
       graph
     end
+
+    def []=(idx, value)
+      raise IndexError if idx < 0 or idx > length
+      return self << value if idx == length
+      each_subject.with_index do |v, i|
+        puts v
+        graph.update RDF::Statement(v, RDF.first, value) if i == idx
+      end
+    end
+
+    def self.from_uri(uri, vals=nil)
+      list = ListResource.from_uri(uri, vals)
+      self.new(list.rdf_subject, list)
+    end
+
+    class ListResource < RdfResource
+    end
+
     ##
     # Monkey patch to allow lists to have subject URIs.
     # Overrides shift in RDF::List to prevent URI subjects
@@ -36,14 +58,6 @@ module ActiveFedora::Rdf
       graph.insert([new_subject, RDF.rest, RDF.nil])
 
       self
-    end
-
-    def self.from_uri(uri, vals=nil)
-      list = ListResource.from_uri(uri, vals)
-      self.new(list.rdf_subject, list)
-    end
-
-    class ListResource < RdfResource
     end
   end
 end
