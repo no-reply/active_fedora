@@ -66,24 +66,14 @@ describe ActiveFedora::RdfxmlRDFDatastream do
           super
         end
 
-        after_initialize :type_resource
-        def type_resource
-          graph.insert([rdf_subject, RDF.type, DAMS.Object])
+        class Description < ActiveFedora::Rdf::RdfResource
+          map_predicates do |map|
+            rdf_type DAMS.Description
+            map.value(:in=> RDF) do |index|
+              index.as :searchable
+            end
+          end
         end
-
-        # def content=(content)
-        #   super
-        #   @about = graph.statements.first.subject
-        # end
-        # class Description
-        #   include ActiveFedora::RdfObject
-        #   map_predicates do |map|
-        #     rdf_type DAMS.Description
-        #     map.value(:in=> RDF) do |index|
-        #       index.as :searchable
-        #     end
-        #   end
-        # end
       end
     end
 
@@ -102,7 +92,7 @@ describe ActiveFedora::RdfxmlRDFDatastream do
 
     describe "an instance with content" do
       subject do
-        subject = MyDatastream.new(double('inner object', :pid=>'test:1', :new_record? =>true), 'descMetadata')
+        subject = MyDatastream.new(double('inner object', :pid=>'test:1', :new_record? =>true), 'descMetadata', about:"http://library.ucsd.edu/ark:/20775/")
         subject.content = File.new('spec/fixtures/damsObjectModel.xml').read
         subject
       end

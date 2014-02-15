@@ -33,6 +33,10 @@ module ActiveFedora::Rdf
       new(uri, vals)
     end
 
+    def writable?
+      !frozen?
+    end
+
     ##
     # Initialize an instance of this resource class. Defaults to a
     # blank node subject. In addition to RDF::Graph parameters, you
