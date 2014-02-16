@@ -14,6 +14,8 @@ module ActiveFedora::Rdf
       graph.singleton_class.properties.keys.each do |property|
         graph.singleton_class.send(:register_property, property)
       end
+      graph.insert RDF::Statement.new(subject, RDF.type, RDF.List)
+      graph.reload
     end
 
     def resource
@@ -33,6 +35,7 @@ module ActiveFedora::Rdf
         puts v
         graph.update RDF::Statement(v, RDF.first, value) if i == idx
       end
+      resource << value if value.kind_of? RDF::Graph
     end
 
     def self.from_uri(uri, vals=nil)
@@ -40,7 +43,7 @@ module ActiveFedora::Rdf
       self.new(list.rdf_subject, list)
     end
 
-    class ListResource < Rdf::Resource
+    class ListResource < Resource
     end
 
     ##
@@ -50,6 +53,7 @@ module ActiveFedora::Rdf
     #
     # @NOTE Lists built this way will return false for #valid?
     def <<(value)
+      resource << value if value.kind_of? RDF::Graph
       value = case value
               when nil         then RDF.nil
               when RDF::Value  then value
