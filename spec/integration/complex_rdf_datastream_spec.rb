@@ -31,6 +31,12 @@ describe "Nested Rdf Objects" do
         v = ds.parts.build(label: 'Alternator')
         v.should be_new_record
       end
+
+      it "should not be new when it's loaded from fedora" do
+        ds.content = '_:g70324142325120 <http://purl.org/dc/terms/title> "Alternator" .
+<info:fedora/test:124> <http://purl.org/dc/terms/hasPart> _:g70324142325120 .'
+        ds.parts.first.should_not be_new_record
+      end
     end
 
     it "should be able to nest a complex object" do
