@@ -12,12 +12,12 @@ describe ActiveFedora::Rdf::List do
     end
     class DemoList < ActiveFedora::RdfxmlRDFDatastream
       map_predicates do |map|
-        map.elementList(:in => MADS, :to => 'elementList', :class_name=>'List')
+        map.elementList(:in => MADS, :to => 'elementList', :class_name=>'DemoList::List')
       end 
       class List < ActiveFedora::Rdf::List
         map_predicates do |map|
-          map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "TopicElement")
-          map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "TemporalElement")
+          map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "DemoList::List::TopicElement")
+          map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "DemoList::List::TemporalElement")
         end
           
         class TopicElement < ActiveFedora::Rdf::Resource
@@ -77,6 +77,7 @@ describe ActiveFedora::Rdf::List do
         subject[2] = RDF::URI.new "http://library.ucsd.edu/ark:/20775/bbXXXXXXX4"
         subject[3] = DemoList::List::TemporalElement.new
         subject[3].elementValue = "20th century"
+        ds.elementList = subject
         doc = Nokogiri::XML(ds.content)
         ns = {rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#", mads: "http://www.loc.gov/mads/rdf/v1#"}
         expect(doc.xpath('/rdf:RDF/rdf:Description/@rdf:about', ns).map(&:value)).to eq ["info:fedora/foo"]
@@ -147,10 +148,10 @@ END
     let (:list) { subject.elementList.first }
 
     it "should have fields" do
-      list.first.should == "http://library.ucsd.edu/ark:/20775/bbXXXXXXX6"
+      list[0].rdf_subject.should == "http://library.ucsd.edu/ark:/20775/bbXXXXXXX6"
       list[1].should be_kind_of DemoList::List::TopicElement
       list[1].elementValue.should == ["Relations with Mexican Americans"]
-      list[2].should == "http://library.ucsd.edu/ark:/20775/bbXXXXXXX4"
+      list[2].rdf_subject.should == "http://library.ucsd.edu/ark:/20775/bbXXXXXXX4"
       list[3].should be_kind_of DemoList::List::TemporalElement
       list[3].elementValue.should == ["20th century"]
     end
@@ -158,7 +159,7 @@ END
     it "should have each" do
       foo = []
       list.each { |n| foo << n.class }
-      foo.should == [RDF::URI, DemoList::List::TopicElement, RDF::URI, DemoList::List::TemporalElement]
+      foo.should == [ActiveFedora::Rdf::Resource, DemoList::List::TopicElement, ActiveFedora::Rdf::Resource, DemoList::List::TemporalElement]
     end
 
     it "should have to_ary" do

@@ -49,7 +49,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
           class ElementList < ActiveFedora::Rdf::List
             rdf_type DummyMADS.elementList
             map_predicates do |map|
-              map.topicElement(in: DummyMADS, to: "TopicElement", :class_name => "MadsTopicElement")
+              map.topicElement(in: DummyMADS, to: "TopicElement", :class_name => "ComplexRDFDatastream::MadsTopicElement")
               map.temporalElement(in: DummyMADS, to: "TemporalElement")
               map.fullNameElement(in: DummyMADS, to: "FullNameElement")
               map.dateNameElement(in: DummyMADS, to: "DateNameElement")
@@ -117,21 +117,21 @@ describe "Nesting attribute behavior of RDFDatastream" do
       end
 
       it "should create nested objects" do
-          # Replace the graph's contents with the Hash
-          subject.attributes = params[:myResource]
+        # Replace the graph's contents with the Hash
+        subject.attributes = params[:myResource]
 
-          # Here's how this would happen if we didn't have attributes=
-          # personal_name = subject.personalName.build
-          # elem_list = personal_name.elementList.build
-          # elem_list.fullNameElement = "Jefferson, Thomas"
-          # elem_list.dateNameElement = "1743-1826"
-          # topic = subject.topic.build
-          # elem_list = topic.elementList.build
-          # elem_list.fullNameElement = 'Cosmology'
-          subject.topic[0].elementList.first[0].elementValue.should == ["Cosmology"]
-          subject.topic[1].elementList.first[0].elementValue.should == ["Quantum Behavior"]
-          subject.personalName.first.elementList.first.fullNameElement.should == ["Jefferson, Thomas"]
-          subject.personalName.first.elementList.first.dateNameElement.should == ["1743-1826"]
+        # Here's how this would happen if we didn't have attributes=
+        # personal_name = subject.personalName.build
+        # elem_list = personal_name.elementList.build
+        # elem_list.fullNameElement = "Jefferson, Thomas"
+        # elem_list.dateNameElement = "1743-1826"
+        # topic = subject.topic.build
+        # elem_list = topic.elementList.build
+        # elem_list.fullNameElement = 'Cosmology'
+        subject.topic[0].elementList.first[0].elementValue.should == ["Cosmology"]
+        subject.topic[1].elementList.first[0].elementValue.should == ["Quantum Behavior"]
+        subject.personalName.first.elementList.first.fullNameElement.should == ["Jefferson, Thomas"]
+        subject.personalName.first.elementList.first.dateNameElement.should == ["1743-1826"]
       end
     end
 

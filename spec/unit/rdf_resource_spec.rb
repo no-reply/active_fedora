@@ -216,10 +216,73 @@ describe ActiveFedora::Rdf::Resource do
   end
 
   describe 'big complex graphs' do
-    it 'should allow access to deep nodes'
-    it 'should reload when parent is reloaded'
-    context 'loaded into parent resource' do
-      it 'should persist subgraphs to correct repositories'
+    before(:each) do
+      class DummyPerson < ActiveFedora::Rdf::Resource
+        configure :type => RDF::URI('http://example.org/Person')
+        property :name, :predicate => RDF::FOAF.name
+        property :publications, :predicate => RDF::FOAF.publications, :class_name => 'DummyDocument'
+        property :knows, :predicate => RDF::FOAF.knows, :class_name => DummyPerson
+      end
+      
+      class DummyDocument < ActiveFedora::Rdf::Resource
+        configure :type => RDF::URI('http://example.org/Document')
+        property :title, :predicate => RDF::DC.title
+        property :creator, :predicate => RDF::DC.creator, :class_name => 'DummyPerson'
+      end
+
+      DummyResource.property :item, :predicate => RDF::DC.relation, :class_name => DummyDocument
     end
+
+    subject { DummyResource.new }
+
+    let (:document1) do
+      d = DummyDocument.new
+      d.title = 'Document One'
+      d
+    end
+    let (:document2) do
+      d = DummyDocument.new
+      d.title = 'Document Two'
+      d
+    end
+    let (:person1) do
+      p = DummyPerson.new
+      p.name = 'Alice'
+      p
+    end
+    let (:person2) do
+      p = DummyPerson.new
+      p.name = 'Bob'
+      p
+    end
+
+    let (:data) { <<END
+_:1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/SomeClass> .
+_:1 <http://purl.org/dc/terms/relation> _:2 .
+_:2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Document> .
+_:2 <http://purl.org/dc/terms/title> "Document One" .
+_:2 <http://purl.org/dc/terms/creator> _:3 .
+_:2 <http://purl.org/dc/terms/creator> _:4 .
+_:4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .
+_:4 <http://xmlns.com/foaf/0.1/name> "Bob" .
+_:3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/Person> .
+_:3 <http://xmlns.com/foaf/0.1/name> "Alice" .
+_:3 <http://xmlns.com/foaf/0.1/knows> _:4 ."
+END
+    }
+
+    after(:each) do
+      Object.send(:remove_const, "DummyDocument") if Object
+      Object.send(:remove_const, "DummyPerson") if Object
+    end
+
+    it 'should allow access to deep nodes' do
+      document1.creator = [person1, person2]
+      document2.creator = person1
+      person1.knows = person2
+      subject.item = [document1]
+      expect(subject.item.first.creator.first.knows.first.name).to eq ['Bob']
+    end
+
   end
 end

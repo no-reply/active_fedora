@@ -21,6 +21,7 @@ module ActiveFedora::Rdf
     end
 
     def set(values)
+      values = values.resource if values.kind_of? List
       values = Array.wrap(values)
       parent.query([rdf_subject, predicate, nil]).each_statement do |statement|
         if !uri_class(statement.object) || uri_class(statement.object) == class_for_property
@@ -47,6 +48,13 @@ module ActiveFedora::Rdf
       new_subject = attributes.key?('id') ? attributes.delete('id') : RDF::Node.new
       node = make_node(new_subject)
       node.attributes = attributes
+      if parent.kind_of? List::ListResource
+        parent.list << node
+        return node
+      elsif node.kind_of? RDF::List
+        self.push node.rdf_subject
+        return node
+      end
       self.push node
       node
     end

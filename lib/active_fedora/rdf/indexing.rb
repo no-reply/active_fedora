@@ -14,20 +14,22 @@ module ActiveFedora
         apply_prefix(name)
       end
 
-      # def to_solr(solr_doc = Hash.new) # :nodoc:
-      #   fields.each do |field_key, field_info|
-      #     values = get_values(rdf_subject, field_key)
-      #     Array(values).each do |val|    
-      #       val = val.to_s if val.kind_of? RDF::URI
-      #       Solrizer.insert_field(solr_doc, apply_prefix(field_key), val, *field_info[:behaviors])
-      #     end
-      #   end
-      #   solr_doc
-      # end
+      def to_solr(solr_doc = Hash.new) # :nodoc:
+        fields.each do |field_key, field_info|
+          values = get_values(rdf_subject, field_key)
+          Array(values).each do |val|    
+            val = val.to_s if val.kind_of? RDF::URI
+            val = val.solrize if val.kind_of? Resource
+            Solrizer.insert_field(solr_doc, apply_prefix(field_key), val, *field_info[:behaviors])
+          end
+        end
+        solr_doc
+      end
 
       # Gives the primary solr name for a column. If there is more than one indexer on the field definition, it gives the first 
       def primary_solr_name(field)
         config = self.class.config_for_term_or_uri(field)
+        return nil unless config # punt on index names for deep nodes!
         if behaviors = config.behaviors
           ActiveFedora::SolrService.solr_name(apply_prefix(field), behaviors.first, type: config.type)
         end
@@ -44,31 +46,50 @@ module ActiveFedora
           config_for_term_or_uri(field).type
         end
       end
+      def old_field_map
+        field_map = {}.with_indifferent_access
+        # 
+        rdf_subject = self.rdf_subject
+        query = RDF::Query.new do
+          pattern [rdf_subject, :predicate, :value]
+        end
 
-      # private
-      #   # returns a Hash, e.g.: {field => {:values => [], :type => :something, :behaviors => []}, ...}
-      #   def fields
-      #     field_map = {}.with_indifferent_access
+        query.execute(graph).each do |solution|
+          predicate = solution.predicate
+          value = solution.value
+          
+          name, config = self.class.config_for_predicate(predicate)
+          next unless config
+          type = config.type
+          behaviors = config.behaviors
+          next unless type and behaviors 
+          field_map[name] ||= {:values => [], :type => type, :behaviors => behaviors}
+          field_map[name][:values] << value.to_s
+        end
+        field_map
+      end
+      
+      def new_fields
+        fields
+      end
+      
+      private
+      # returns a Hash, e.g.: {field => {:values => [], :type => :something, :behaviors => []}, ...}
+      def fields
+        field_map = {}.with_indifferent_access
 
-      #     rdf_subject = self.rdf_subject
-      #     query = RDF::Query.new do
-      #       pattern [rdf_subject, :predicate, :value]
-      #     end
-
-      #     query.execute(graph).each do |solution|
-      #       predicate = solution.predicate
-      #       value = solution.value
-            
-      #       name, config = self.class.config_for_predicate(predicate)
-      #       next unless config
-      #       type = config.type
-      #       behaviors = config.behaviors
-      #       next unless type and behaviors 
-      #       field_map[name] ||= {:values => [], :type => type, :behaviors => behaviors}
-      #       field_map[name][:values] << value.to_s
-      #     end
-      #     field_map
-      #   end
+        self.class.properties.each do |name, config|
+          type = config[:type]
+          behaviors = config[:behaviors]
+          next unless type and behaviors
+          next if config[:class_name] && config[:class_name] < ActiveFedora::Base
+          resource.query(:subject => rdf_subject, :predicate => config[:predicate]).each_statement do |statement|
+            field_map[name] ||= {:values => [], :type => type, :behaviors => behaviors}
+            field_map[name][:values] << statement.object.to_s
+          end
+        end
+        field_map
+      end
     end
   end
 end

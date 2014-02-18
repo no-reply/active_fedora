@@ -28,18 +28,18 @@ describe ActiveFedora::Rdf::List do
     end
     class ElementList < ActiveFedora::Rdf::List
       map_predicates do |map|
-        map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "TopicElement")
-        map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "TemporalElement")
+        map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => 'TopicElement')
+        map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => 'TemporalElement')
       end
       accepts_nested_attributes_for :topicElement, :temporalElement
     end
 
     class Topic < ActiveFedora::Rdf::Resource
       rdf_type MADS.Topic
-      rdf_subject { |ds| RDF::URI.new(Rails.configuration.id_namespace + ds.pid)}
+      configure :base_uri => "http://example.org/id_namespace#"
       map_predicates do |map|
         map.name(:in => MADS, :to => 'authoritativeLabel')
-        map.elementList(:in => MADS, :class_name=>'ElementList')
+        map.elementList(:in => MADS, :class_name => 'ElementList')
         map.externalAuthority(:in => MADS, :to => 'hasExactExternalAuthority')
       end
       accepts_nested_attributes_for :elementList
@@ -65,9 +65,8 @@ describe ActiveFedora::Rdf::List do
         }
       }
 
-      topic = Topic.new(RDF::Graph.new)
+      topic = Topic.new
       topic.attributes = params[:topic]
-      # puts topic.graph.dump(:ntriples)
       topic.elementList.first.size.should == 2
       topic.elementList.first[0].should be_kind_of(TopicElement)
       topic.elementList.first[0].elementValue.should == ["Baseball"]
@@ -75,7 +74,7 @@ describe ActiveFedora::Rdf::List do
       topic.elementList.first[1].elementValue.should == ["Football"]
 
       # only one rdf:rest rdf:nil
-      topic.graph.query([nil, RDF.rest, RDF.nil]).size.should == 1 
+      topic.query([nil, RDF.rest, RDF.nil]).size.should == 1 
     end
     it "should insert new nodes of varying types into RdfLists (rather than calling .build)" do
       # It's Not clear what the syntax should be when an RDF list contains multiple types of sub-nodes.  
@@ -91,9 +90,8 @@ describe ActiveFedora::Rdf::List do
         }
       }
 
-      topic = Topic.new(RDF::Graph.new)
+      topic = Topic.new
       topic.attributes = params[:topic]
-      # puts topic.graph.dump(:ntriples)
       topic.elementList.first.size.should == 4
       topic.elementList.first[0].should be_kind_of(TopicElement)
       topic.elementList.first[0].elementValue.should == ["Baseball"]

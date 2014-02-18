@@ -9,6 +9,7 @@
 #   subject.descMetadata.set.title # => 'test'
 module ActiveFedora::Rdf::Identifiable
   extend ActiveSupport::Concern
+  delegate :parent, :dump, :query, :rdf_type, :to => :resource
   ##
   # Defines which resource defines this ActiveFedora object.
   # This is required for OregonDigital::RDF::RdfResource#set_value to append graphs.

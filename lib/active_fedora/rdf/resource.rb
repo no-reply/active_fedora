@@ -70,9 +70,9 @@ module ActiveFedora::Rdf
     def attributes=(values)
       raise ArgumentError, "values must be a Hash, you provided #{values.class}" unless values.kind_of? Hash
       values.with_indifferent_access.each do |key, value|
-        if self.class.properties.keys.include?(key)
+        if self.singleton_class.properties.keys.include?(key)
           set_value(rdf_subject, key, value)
-        elsif nested_attributes_options.keys.map{ |k| "#{k}_attributes"}.include?(key)
+        elsif self.singleton_class.nested_attributes_options.keys.map{ |k| "#{k}_attributes"}.include?(key)
           send("#{key}=".to_sym, value)
         end
       end

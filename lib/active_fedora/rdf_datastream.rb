@@ -113,46 +113,5 @@ module ActiveFedora
       raise "you must override the `serialization_format' method in a subclass"
     end
 
-    def to_solr(solr_doc = Hash.new) # :nodoc:
-      fields.each do |field_key, field_info|
-        values = resource.get_values(field_key)
-        if values
-          Array.wrap(values).each do |val|
-            val = val.to_s if val.kind_of? RDF::URI
-            val = val.solrize if val.kind_of? Rdf::Resource
-            self.class.create_and_insert_terms(prefix(field_key), val, field_info[:behaviors], solr_doc)
-          end
-        end
-      end
-      solr_doc
-    end
-
-    def prefix(name)
-      name = name.to_s unless name.is_a? String
-      pre = dsid.underscore
-      return "#{pre}__#{name}".to_sym
-    end
-
-    private
-
-    ##
-    # Builds a map of properties with values, type and index behaviors
-    # for consumption by to_solr.
-    def fields
-      field_map = {}.with_indifferent_access
-
-      self.class.properties.each do |name, config|
-        type = config[:type]
-        behaviors = config[:behaviors]
-        next unless type and behaviors
-        next if config[:class_name] && config[:class_name] < ActiveFedora::Base
-        resource.query(:subject => rdf_subject, :predicate => config[:predicate]).each_statement do |statement|
-          field_map[name] ||= {:values => [], :type => type, :behaviors => behaviors}
-          field_map[name][:values] << statement.object.to_s
-        end
-      end
-      return field_map
-    end
-
   end
 end
