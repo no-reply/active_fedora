@@ -1,14 +1,14 @@
 module ActiveFedora::Rdf
   ##
-  # Implements property configuration common to RdfResource and
-  # RdfResourceDatastream.  It does its work at the class level, and
-  # is meant to be extended.
+  # Implements property configuration common to Rdf::Resource,
+  # RDFDatastream, and others.  It does its work at the class level,
+  # and is meant to be extended.
   #
   # Define properties at the class level with:
   #
   #    property :title, :predicate => RDF::DC.title, :class_name => ResourceClass
   #
-  # or with the 'old' ActiveFedora::RDFDatastream style:
+  # or with the 'old' style:
   #
   #    map_predicates do |map|
   #      map.title(:in => RDF::DC)
@@ -19,7 +19,7 @@ module ActiveFedora::Rdf
     attr_accessor :properties
 
     ##
-    # Registers properties for RdfResource like classes
+    # Registers properties for Resource-like classes
     # @param [Symbol]  name of the property (and its accessor methods)
     # @param [Hash]  opts for this property, must include a :predicate
     # @yield [index] index sets solr behaviors for the property

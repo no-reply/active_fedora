@@ -40,7 +40,7 @@ module ActiveFedora::Rdf
       @subjects = []
       @output.print %(# This file generated automatically using vocab-fetch from #{source}
         require 'rdf'
-        module OregonDigital::Vocabularies
+        module Rdf::Vocabularies
           class #{class_name} < ::RDF::#{"Strict" if @strict}Vocabulary("#{prefix}")
         ).gsub(/^        /, '') if @output_class_file
       if @fetch

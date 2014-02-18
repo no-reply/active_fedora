@@ -1,4 +1,10 @@
 module ActiveFedora::Rdf
+  ##
+  # An implementation of RDF::Lists intregrated with ActiveFedora::Rdf.
+  # 
+  # A thoughtful reflection period is encouraged before using the
+  # rdf:List concept in your data. The community may pursue other
+  # options for ordered sets.
   class List < RDF::List
     include ActiveFedora::Rdf::NestedAttributes
     extend Configurable
@@ -72,6 +78,8 @@ module ActiveFedora::Rdf
       node_from_value(super)
     end
 
+    ##
+    # Find an AF::RDF::Resources from the value returned by RDF::List
     def node_from_value(value)
       if value.kind_of? RDF::Resource
         type_uri = resource.query([value, RDF.type, nil]).to_a.first.try(:object)
@@ -82,6 +90,9 @@ module ActiveFedora::Rdf
       value
     end
 
+    ##
+    # This class is the graph/Resource that backs the List and
+    # supplies integration with the rest of ActiveFedora::Rdf
     class ListResource < Resource
       attr_reader :list
 

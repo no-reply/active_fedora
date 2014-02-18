@@ -1,10 +1,10 @@
 module ActiveFedora::Rdf
   module Configurable
     ##
-    # Module to include configurable class-wide properties common to RdfResource
-    # and RdfResourceDatastream. It does its work at the class level, and
-    # is meant to be extended.
-    # Define configuration as follows:
+    # Module to include configurable class-wide properties common to
+    # Resource and RDFDatastream. It does its work at the class level,
+    # and is meant to be extended.
+    #
     # Define properties at the class level with:
     #
     #    configure :base_uri => "http://oregondigital.org/resource/", :repository => :parent

@@ -1,15 +1,15 @@
 module ActiveFedora::Rdf
   ##
-  # Defines a generic RdfResource as an RDF::Graph with property
+  # Defines a generic RDF `Resource` as an RDF::Graph with property
   # configuration, accessors, and some other methods for managing
-  # "resources" as discrete subgraphs which can be managed by a Hydra
+  # resources as discrete subgraphs which can be maintained by a Hydra
   # datastream model.
   #
-  # Resources can be instances of RdfResource directly, but more
-  # often they will be instances of subclasses with registered
-  # properties and configuration. e.g.
+  # Resources can be instances of ActiveFedora::Rdf::Resource
+  # directly, but more often they will be instances of subclasses with
+  # registered properties and configuration. e.g.
   #
-  #    class License < RdfResource
+  #    class License < Resource
   #      configure :repository => :default
   #      property :title, :predicate => RDF::DC.title, :class_name => RDF::Literal do |index|
   #        index.as :displayable, :facetable
@@ -44,7 +44,7 @@ module ActiveFedora::Rdf
     # existing data.
     #
     # You can pass in only a parent with:
-    #    RdfResource.new(nil, parent)
+    #    Resource.new(nil, parent)
     #
     # @see RDF::Graph
     def initialize(*args, &block)
@@ -123,7 +123,6 @@ module ActiveFedora::Rdf
 
     ##
     # Load data from URI
-    # @TODO: use graph name context for provenance
     def fetch
       load(rdf_subject)
       self
@@ -272,8 +271,6 @@ module ActiveFedora::Rdf
 
     ##
     # @return [String] the string to index in solr
-    #
-    # @TODO: is there a better pattern for bnodes than indexing the rdf_label?
     def solrize
       node? ? rdf_label : rdf_subject.to_s
     end
