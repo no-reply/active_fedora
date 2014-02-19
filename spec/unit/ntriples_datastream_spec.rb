@@ -174,6 +174,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
     end
     before(:each) do
       @subject.stub(:pid => 'test:1')
+      @subject.serialize
     end
     it "should provide .to_solr and return a SolrDocument" do
       @subject.should respond_to(:to_solr)
