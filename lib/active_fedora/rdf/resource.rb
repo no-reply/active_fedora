@@ -262,16 +262,11 @@ module ActiveFedora::Rdf
       end
     end
 
-    def new_record=(val)
-      @new_record = val
-    end
-
     def new_record?
       if parent
-        return @new_record = parent.new_record?
+        return parent.new_record?
       end
-      @new_record = true if @new_record.nil?
-      @new_record
+      return true
     end
 
     ##
