@@ -33,7 +33,11 @@ module ActiveFedora
         config = self.class.config_for_term_or_uri(field)
         return nil unless config # punt on index names for deep nodes!
         if behaviors = config.behaviors
-          ActiveFedora::SolrService.solr_name(apply_prefix(field), behaviors.first, type: config.type)
+          behaviors.each do |behavior|
+            result = ActiveFedora::SolrService.solr_name(apply_prefix(field), behavior, type: config.type)
+            return result if result.split('_').last[1..-1].include?('s')
+          end
+          raise RuntimeError "no stored fields were found"
         end
       end
 

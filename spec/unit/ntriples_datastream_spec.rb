@@ -182,7 +182,7 @@ describe ActiveFedora::NtriplesRDFDatastream do
     end
 
     it "should have a solr_name method" do
-      expect(MyDatastream.new(nil, 'descMetadata').primary_solr_name(:based_near)).to eq 'desc_metadata__based_near_sim'
+      expect(MyDatastream.new(nil, 'descMetadata').primary_solr_name(:based_near)).to eq 'desc_metadata__based_near_tesim'
       expect(MyDatastream.new(nil, 'props').primary_solr_name(:title)).to eq 'props__title_tesim'
     end
 
