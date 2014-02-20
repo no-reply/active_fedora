@@ -144,6 +144,8 @@ module ActiveFedora::Rdf
 
     def persisted?
       @persisted ||= false
+      return (@persisted and parent.persisted?) if parent
+      @persisted
     end
 
     ##
@@ -263,10 +265,7 @@ module ActiveFedora::Rdf
     end
 
     def new_record?
-      if parent
-        return parent.new_record?
-      end
-      return true
+      not persisted?
     end
 
     ##
