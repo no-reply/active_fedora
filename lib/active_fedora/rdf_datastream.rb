@@ -39,6 +39,7 @@ module ActiveFedora
     def content=(content)
       resource.clear!
       resource << RDF::Reader.for(serialization_format).new(content)
+      resource.new_record = false
       content
     end
 
