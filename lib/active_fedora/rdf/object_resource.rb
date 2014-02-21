@@ -6,6 +6,7 @@ module ActiveFedora::Rdf
   # @see ActiveFedora::RDFDatastream
   class ObjectResource < Resource
     configure :base_uri => 'info:fedora/'
+    attr_accessor :datastream
 
     def persist!
       return false unless datastream and datastream.respond_to? :digital_object
