@@ -14,8 +14,9 @@ module ActiveFedora::Rdf
     end
 
     def result
-      result ||= standard_result
-      result = result.reject(&:nil?)
+      result = parent.query(:subject => rdf_subject, :predicate => predicate)
+      .map{|x| convert_object(x.object)}
+      .reject(&:nil?)
       return result if !property_config || property_config[:multivalue]
       result.first
     end
@@ -101,7 +102,7 @@ module ActiveFedora::Rdf
       end
     end
 
-   # protected
+   protected
 
     def node_cache
       @node_cache ||= {}
@@ -114,17 +115,6 @@ module ActiveFedora::Rdf
       resource.persist! if resource.class.repository == :parent
     end
 
-    def standard_result
-      values = []
-      parent.query(:subject => rdf_subject, :predicate => predicate).each_statement do |statement|
-        value = statement.object
-        value = value.object if value.kind_of? RDF::Literal
-        value = make_node(value) if value.kind_of? RDF::Resource
-        values << value unless value.nil?
-      end
-      return values
-    end
-
     def predicate
       return property_config[:predicate] unless property.kind_of? RDF::URI
       return property
@@ -132,6 +122,13 @@ module ActiveFedora::Rdf
 
     def valid_datatype?(val)
       val.is_a? String or val.is_a? Date or val.is_a? Time or val.is_a? Numeric or val.is_a? Symbol or val == !!val
+    end
+
+    # Converts an object to the appropriate class.
+    def convert_object(value)
+      value = value.object if value.kind_of? RDF::Literal
+      value = make_node(value) if value.kind_of? RDF::Resource
+      return value
     end
 
     ##
