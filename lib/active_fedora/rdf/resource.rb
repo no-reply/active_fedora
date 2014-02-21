@@ -222,32 +222,15 @@ module ActiveFedora::Rdf
       return false if uri_or_str.nil? or uri_or_str.to_s.empty?
       # raise "Refusing update URI! This object is persisted to a datastream." if persisted?
       old_subject = rdf_subject
-      if uri_or_str.respond_to? :to_uri
-        @rdf_subject = uri_or_str.to_uri
-      elsif uri_or_str.to_s.start_with? '_:'
-        if uri_or_str.kind_of?(RDF::Node)
-          @rdf_subject = uri_or_str
-        else
-          @rdf_subject = RDF::Node(uri_or_str.to_s[2..-1])
-        end
-      elsif uri_or_str.to_s.start_with? 'http://' or uri_or_str.to_s.start_with? 'info:fedora/'
-        @rdf_subject = RDF::URI(uri_or_str.to_s)
-      elsif base_uri && !uri_or_str.to_s.start_with?(base_uri.to_s)
-        separator = self.base_uri.to_s[-1,1] =~ /(\/|#)/ ? '' : '/'
-        @rdf_subject = RDF::URI.intern(self.base_uri.to_s + separator + uri_or_str.to_s)
-      elsif
-        @rdf_subject = RDF::URI(uri_or_str)
-      end
+      @rdf_subject = get_uri(uri_or_str)
 
-      unless empty?
-        each_statement do |statement|
-          if statement.subject == old_subject
-            delete(statement)
-            self << RDF::Statement.new(rdf_subject, statement.predicate, statement.object)
-          elsif statement.object == old_subject
-            delete(statement)
-            self << RDF::Statement.new(statement.subject, statement.predicate, rdf_subject)
-          end
+      each_statement do |statement|
+        if statement.subject == old_subject
+          delete(statement)
+          self << RDF::Statement.new(rdf_subject, statement.predicate, statement.object)
+        elsif statement.object == old_subject
+          delete(statement)
+          self << RDF::Statement.new(statement.subject, statement.predicate, rdf_subject)
         end
       end
     end
@@ -316,5 +299,21 @@ module ActiveFedora::Rdf
       end
     end
 
+    private
+
+    ##
+    # Takes a URI or String and aggressively tries to create a valid RDF URI.
+    # Combines the input with base_uri if appropriate.
+    #
+    # @TODO: URI.scheme_list is naive and incomplete. Find a better way to check for an existing scheme.
+    def get_uri(uri_or_str)
+      return uri_or_str.to_uri if uri_or_str.respond_to? :to_uri
+      return uri_or_str if uri_or_str.kind_of? RDF::Node
+      uri_or_str = uri_or_str.to_s
+      return RDF::Node(uri_or_str[2..-1]) if uri_or_str.start_with? '_:'
+      return RDF::URI(uri_or_str) if RDF::URI(uri_or_str).valid? and (URI.scheme_list.include?(RDF::URI.new(uri_or_str).scheme.upcase) or RDF::URI.new(uri_or_str).scheme == 'info')
+      return RDF::URI(self.base_uri.to_s + (self.base_uri.to_s[-1,1] =~ /(\/|#)/ ? '' : '/') + uri_or_str) if base_uri && !uri_or_str.start_with?(base_uri.to_s)
+      raise RuntimeError "could not make a valid RDF::URI from #{uri_or_str}"
+    end
   end
 end
