@@ -115,7 +115,6 @@ module ActiveFedora::Rdf
 
     def value_to_node(val)
       val = RDF::Literal(val) if valid_datatype? val
-      val = val.resource if val.respond_to?(:resource)
       val
     end
 
@@ -163,7 +162,7 @@ module ActiveFedora::Rdf
         while parent != parent.parent && parent.parent
           parent = parent.parent
         end
-        if parent.try(:datastream)
+        if parent.respond_to?(:datastream) && parent.datastream
           return parent.datastream
         end
         parent
