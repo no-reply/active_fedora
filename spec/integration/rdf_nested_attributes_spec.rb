@@ -47,7 +47,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
             accepts_nested_attributes_for :elementList, :extraProperty
           end
           class ElementList < ActiveFedora::Rdf::List
-            rdf_type DummyMADS.elementList
+            configure :type => DummyMADS.elementList
             map_predicates do |map|
               map.topicElement(in: DummyMADS, to: "TopicElement", :class_name => "ComplexRDFDatastream::MadsTopicElement")
               map.temporalElement(in: DummyMADS, to: "TemporalElement")
@@ -59,7 +59,7 @@ describe "Nesting attribute behavior of RDFDatastream" do
             accepts_nested_attributes_for :topicElement
           end
           class MadsTopicElement < ActiveFedora::Rdf::Resource
-            rdf_type DummyMADS.TopicElement
+            configure :type => DummyMADS.TopicElement
             map_predicates do |map|
               map.elementValue(in: DummyMADS)
             end

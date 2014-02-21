@@ -15,13 +15,13 @@ describe ActiveFedora::Rdf::List do
     end
 
     class TopicElement < ActiveFedora::Rdf::Resource
-      rdf_type MADS.TopicElement
+      configure :type => MADS.TopicElement
       map_predicates do |map|
         map.elementValue(:in=> MADS)
       end
     end
     class TemporalElement < ActiveFedora::Rdf::Resource
-      rdf_type MADS.TemporalElement
+      configure :type => MADS.TemporalElement
       map_predicates do |map|
         map.elementValue(:in=> MADS)
       end
@@ -35,7 +35,7 @@ describe ActiveFedora::Rdf::List do
     end
 
     class Topic < ActiveFedora::Rdf::Resource
-      rdf_type MADS.Topic
+      configure :type => MADS.Topic
       configure :base_uri => "http://example.org/id_namespace#"
       map_predicates do |map|
         map.name(:in => MADS, :to => 'authoritativeLabel')
@@ -52,7 +52,7 @@ describe ActiveFedora::Rdf::List do
     Object.send(:remove_const, :TemporalElement)
     Object.send(:remove_const, :MADS)
   end
-  
+
   describe "nested_attributes" do
     it "should insert new nodes into RdfLists (rather than calling .build)" do
       params = {
@@ -74,10 +74,10 @@ describe ActiveFedora::Rdf::List do
       topic.elementList.first[1].elementValue.should == ["Football"]
 
       # only one rdf:rest rdf:nil
-      topic.query([nil, RDF.rest, RDF.nil]).size.should == 1 
+      topic.query([nil, RDF.rest, RDF.nil]).size.should == 1
     end
     it "should insert new nodes of varying types into RdfLists (rather than calling .build)" do
-      # It's Not clear what the syntax should be when an RDF list contains multiple types of sub-nodes.  
+      # It's Not clear what the syntax should be when an RDF list contains multiple types of sub-nodes.
       # This is a guess, which currently works.
       params = {
         topic: {

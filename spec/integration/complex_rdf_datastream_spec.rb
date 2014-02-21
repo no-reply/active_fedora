@@ -141,7 +141,7 @@ END
           end
 
           class MediatorUser < ActiveFedora::Rdf::Resource
-            rdf_type RDF::DC.AgentClass
+            configure :type => RDF::DC.AgentClass
             map_predicates do |map|
               map.title(:in=> RDF::DC)
             end
@@ -200,14 +200,14 @@ END
           end
 
           class Series < ActiveFedora::Rdf::Resource
-            rdf_type 'http://www.ebu.ch/metadata/ontologies/ebucore#Series'
+            configure :type => 'http://www.ebu.ch/metadata/ontologies/ebucore#Series'
             map_predicates do |map|
               map.title(:in=> EbuCore)
             end
           end
 
           class Program  < ActiveFedora::Rdf::Resource
-            rdf_type 'http://www.ebu.ch/metadata/ontologies/ebucore#Programme'
+            configure :type => 'http://www.ebu.ch/metadata/ontologies/ebucore#Programme'
             map_predicates do |map|
               map.title(:in=> EbuCore)
             end

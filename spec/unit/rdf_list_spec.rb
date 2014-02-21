@@ -13,22 +13,22 @@ describe ActiveFedora::Rdf::List do
     class DemoList < ActiveFedora::RdfxmlRDFDatastream
       map_predicates do |map|
         map.elementList(:in => MADS, :to => 'elementList', :class_name=>'DemoList::List')
-      end 
+      end
       class List < ActiveFedora::Rdf::List
         map_predicates do |map|
           map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "DemoList::List::TopicElement")
           map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "DemoList::List::TemporalElement")
         end
-          
+
         class TopicElement < ActiveFedora::Rdf::Resource
-          rdf_type MADS.TopicElement
-          map_predicates do |map|   
+          configure :type => MADS.TopicElement
+          map_predicates do |map|
             map.elementValue(:in=> MADS)
           end
         end
         class TemporalElement < ActiveFedora::Rdf::Resource
-          rdf_type MADS.TemporalElement
-          map_predicates do |map|   
+          configure :type => MADS.TemporalElement
+          map_predicates do |map|
             map.elementValue(:in=> MADS)
           end
         end
@@ -91,7 +91,7 @@ describe ActiveFedora::Rdf::List do
   end
 
   describe "an empty list" do
-    subject { DemoList.new(double('inner object', :pid=>'foo', :new_record? =>true)).elementList.build } 
+    subject { DemoList.new(double('inner object', :pid=>'foo', :new_record? =>true)).elementList.build }
     it "should have to_ary" do
       subject.to_ary.should == []
     end
@@ -99,9 +99,9 @@ describe ActiveFedora::Rdf::List do
 
   describe "a list that has a constructed element" do
     let(:ds) { DemoList.new(double('inner object', :pid=>'foo', :new_record? =>true)) }
-    let(:list) { ds.elementList.build } 
+    let(:list) { ds.elementList.build }
     let!(:topic) { list.topicElement.build }
-    
+
     it "should have to_ary" do
       list.to_ary.size.should == 1
       list.to_ary.first.class.should == DemoList::List::TopicElement
@@ -123,7 +123,7 @@ describe ActiveFedora::Rdf::List do
       subject.content =<<END
   <rdf:RDF
       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:mads="http://www.loc.gov/mads/rdf/v1#">
-      
+
         <mads:ComplexSubject rdf:about="info:fedora/foo">
           <mads:elementList rdf:parseType="Collection">
             <rdf:Description rdf:about="http://library.ucsd.edu/ark:/20775/bbXXXXXXX6"/>
@@ -138,7 +138,7 @@ describe ActiveFedora::Rdf::List do
         </mads:ComplexSubject>
       </rdf:RDF>
 END
-      
+
       subject
     end
     it "should have a subject" do
