@@ -9,8 +9,6 @@ module ActiveFedora::Rdf
 
     def clear
       set(nil)
-      # Delete all the assertions about this object
-      #parent.delete([rdf_subject, nil, nil])
     end
 
     def result
@@ -22,27 +20,21 @@ module ActiveFedora::Rdf
     end
 
     def set(values)
-      values = values.resource if values.kind_of? List
+      values = values.resource if values.respond_to? :resource
       values = Array.wrap(values)
+      empty_property
+      values.each do |val|
+        set_value(val)
+      end
+      parent.persist! if parent.class.repository == :parent && parent.send(:repository)
+    end
+
+    def empty_property
       parent.query([rdf_subject, predicate, nil]).each_statement do |statement|
         if !uri_class(statement.object) || uri_class(statement.object) == class_for_property
           parent.delete(statement)
         end
       end
-      values.each do |val|
-        val = RDF::Literal(val) if valid_datatype? val
-        val = val.resource if val.respond_to?(:resource)
-        if val.kind_of? Resource
-          node_cache[val.rdf_subject] = nil
-          add_child_node(val)
-          next
-        end
-        val = val.to_uri if val.respond_to? :to_uri
-        raise 'value must be an RDF URI, Node, Literal, or a valid datatype. See RDF::Literal' unless
-            val.kind_of? RDF::Value or val.kind_of? RDF::Literal
-        parent.insert [rdf_subject, predicate, val]
-      end
-      parent.persist! if parent.class.repository == :parent && parent.send(:repository)
     end
 
     def build(attributes={})
@@ -108,6 +100,25 @@ module ActiveFedora::Rdf
       @node_cache ||= {}
     end
 
+    def set_value(val)
+      val = value_to_node(val)
+      if val.kind_of? Resource
+        node_cache[val.rdf_subject] = nil
+        add_child_node(val)
+        return
+      end
+      val = val.to_uri if val.respond_to? :to_uri
+      raise 'value must be an RDF URI, Node, Literal, or a valid datatype. See RDF::Literal' unless
+          val.kind_of? RDF::Value or val.kind_of? RDF::Literal
+      parent.insert [rdf_subject, predicate, val]
+    end
+
+    def value_to_node(val)
+      val = RDF::Literal(val) if valid_datatype? val
+      val = val.resource if val.respond_to?(:resource)
+      val
+    end
+
     def add_child_node(resource)
       parent.insert [rdf_subject, predicate, resource.rdf_subject]
       resource.parent = parent
@@ -152,7 +163,7 @@ module ActiveFedora::Rdf
         while parent != parent.parent && parent.parent
           parent = parent.parent
         end
-        if parent.datastream
+        if parent.try(:datastream)
           return parent.datastream
         end
         parent
