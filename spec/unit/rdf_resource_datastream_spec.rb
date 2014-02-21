@@ -88,6 +88,9 @@ describe ActiveFedora::RDFDatastream do
           subject.save
           subject.reload
         end
+        it "should be persisted" do
+          expect(subject.descMetadata.resource.persisted?).to be_true
+        end
         context "and it's reloaded" do
           before(:each) do
             subject.reload

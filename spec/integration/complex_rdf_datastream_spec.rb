@@ -22,8 +22,8 @@ describe "Nested Rdf Objects" do
     end
 
     let (:ds) do
-      mock_obj = double(:mock_obj, :pid=>'test:124', :new_record? => true)
-      ds = SpecDatastream.new(mock_obj)
+      test_obj = ActiveFedora::Base.new(:pid=>'test:124')
+      ds = SpecDatastream.new(test_obj)
     end
 
     describe "#new_record?" do
@@ -35,6 +35,7 @@ describe "Nested Rdf Objects" do
       it "should not be new when it's loaded from fedora" do
         ds.content = '_:g70324142325120 <http://purl.org/dc/terms/title> "Alternator" .
 <info:fedora/test:124> <http://purl.org/dc/terms/hasPart> _:g70324142325120 .'
+        ds.resource.persist!
         ds.parts.first.should_not be_new_record
       end
     end
