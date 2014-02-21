@@ -24,10 +24,6 @@ module ActiveFedora
       end
     end
 
-    def freeze
-      @graph.freeze
-    end
-
     def metadata?
       true
     end
