@@ -20,7 +20,7 @@ module ActiveFedora::Rdf
     extend Configurable
     extend Properties
     include ActiveFedora::Rdf::NestedAttributes
-    attr_accessor :parent, :datastream
+    attr_accessor :parent
 
     def self.type_registry
       @@type_registry ||= {}
@@ -86,7 +86,7 @@ module ActiveFedora::Rdf
       return true if rdf_subject.kind_of? RDF::Node
       false
     end
-    
+
     def to_term
       rdf_subject
     end

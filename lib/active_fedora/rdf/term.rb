@@ -9,39 +9,32 @@ module ActiveFedora::Rdf
 
     def clear
       set(nil)
-      # Delete all the assertions about this object
-      #parent.delete([rdf_subject, nil, nil])
     end
 
     def result
-      result ||= standard_result
-      result = result.reject(&:nil?)
+      result = parent.query(:subject => rdf_subject, :predicate => predicate)
+      .map{|x| convert_object(x.object)}
+      .reject(&:nil?)
       return result if !property_config || property_config[:multivalue]
       result.first
     end
 
     def set(values)
-      values = values.resource if values.kind_of? List
+      values = values.resource if values.respond_to? :resource
       values = Array.wrap(values)
+      empty_property
+      values.each do |val|
+        set_value(val)
+      end
+      parent.persist! if parent.class.repository == :parent && parent.send(:repository)
+    end
+
+    def empty_property
       parent.query([rdf_subject, predicate, nil]).each_statement do |statement|
         if !uri_class(statement.object) || uri_class(statement.object) == class_for_property
           parent.delete(statement)
         end
       end
-      values.each do |val|
-        val = RDF::Literal(val) if valid_datatype? val
-        val = val.resource if val.respond_to?(:resource)
-        if val.kind_of? Resource
-          node_cache[val.rdf_subject] = nil
-          add_child_node(val)
-          next
-        end
-        val = val.to_uri if val.respond_to? :to_uri
-        raise 'value must be an RDF URI, Node, Literal, or a valid datatype. See RDF::Literal' unless
-            val.kind_of? RDF::Value or val.kind_of? RDF::Literal
-        parent.insert [rdf_subject, predicate, val]
-      end
-      parent.persist! if parent.class.repository == :parent && parent.send(:repository)
     end
 
     def build(attributes={})
@@ -101,10 +94,28 @@ module ActiveFedora::Rdf
       end
     end
 
-   # protected
+   protected
 
     def node_cache
       @node_cache ||= {}
+    end
+
+    def set_value(val)
+      val = value_to_node(val)
+      if val.kind_of? Resource
+        node_cache[val.rdf_subject] = nil
+        add_child_node(val)
+        return
+      end
+      val = val.to_uri if val.respond_to? :to_uri
+      raise 'value must be an RDF URI, Node, Literal, or a valid datatype. See RDF::Literal' unless
+          val.kind_of? RDF::Value or val.kind_of? RDF::Literal
+      parent.insert [rdf_subject, predicate, val]
+    end
+
+    def value_to_node(val)
+      val = RDF::Literal(val) if valid_datatype? val
+      val
     end
 
     def add_child_node(resource)
@@ -114,17 +125,6 @@ module ActiveFedora::Rdf
       resource.persist! if resource.class.repository == :parent
     end
 
-    def standard_result
-      values = []
-      parent.query(:subject => rdf_subject, :predicate => predicate).each_statement do |statement|
-        value = statement.object
-        value = value.object if value.kind_of? RDF::Literal
-        value = make_node(value) if value.kind_of? RDF::Resource
-        values << value unless value.nil?
-      end
-      return values
-    end
-
     def predicate
       return property_config[:predicate] unless property.kind_of? RDF::URI
       return property
@@ -132,6 +132,13 @@ module ActiveFedora::Rdf
 
     def valid_datatype?(val)
       val.is_a? String or val.is_a? Date or val.is_a? Time or val.is_a? Numeric or val.is_a? Symbol or val == !!val
+    end
+
+    # Converts an object to the appropriate class.
+    def convert_object(value)
+      value = value.object if value.kind_of? RDF::Literal
+      value = make_node(value) if value.kind_of? RDF::Resource
+      return value
     end
 
     ##
@@ -155,7 +162,7 @@ module ActiveFedora::Rdf
         while parent != parent.parent && parent.parent
           parent = parent.parent
         end
-        if parent.datastream
+        if parent.respond_to?(:datastream) && parent.datastream
           return parent.datastream
         end
         parent

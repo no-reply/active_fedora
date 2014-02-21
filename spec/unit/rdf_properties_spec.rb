@@ -1,8 +1,8 @@
 require "spec_helper"
-describe Rdf::Properties do
+describe ActiveFedora::Rdf::Properties do
   before(:each) do
     class DummyProperties
-      extend Rdf::Properties
+      extend ActiveFedora::Rdf::Properties
     end
   end
   after(:each) do

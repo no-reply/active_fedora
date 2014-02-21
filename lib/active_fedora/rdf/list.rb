@@ -1,7 +1,7 @@
 module ActiveFedora::Rdf
   ##
   # An implementation of RDF::Lists intregrated with ActiveFedora::Rdf.
-  # 
+  #
   # A thoughtful reflection period is encouraged before using the
   # rdf:List concept in your data. The community may pursue other
   # options for ordered sets.
@@ -40,7 +40,7 @@ module ActiveFedora::Rdf
       raise IndexError "index #{idx} too small for array: minimum 0" if idx < 0
 
       if idx >= length
-        (idx - length).times do 
+        (idx - length).times do
           self << RDF::OWL.Nothing
         end
         return self << value
@@ -50,21 +50,15 @@ module ActiveFedora::Rdf
         resource.set_value(v, RDF.first, value)
       end
     end
-    
+
     ##
     # Override to return AF::Rdf::Resources as values, where
     # appropriate.
-    #
-    # This is a pretty hard monkey patch over the RDF::List version.
-    # there might be a better way to change `value` when calling super
-    # before passing it to the block?
     def each(&block)
-      return to_enum unless block_given?
+      return super unless block_given?
 
-      each_subject do |subject|
-        if value = graph.first_object(:subject => subject, :predicate => RDF.first)
-          block.call(node_from_value(value)) # FIXME
-        end
+      super do |value|
+        block.call(node_from_value(value))
       end
     end
 
@@ -112,10 +106,10 @@ module ActiveFedora::Rdf
                 item.attributes = attr if attr
                 list[counter.to_i] = item
               end
-            else 
+            else
               value.each do |entry|
                 item = klass.new()
-                item.attributes = entry 
+                item.attributes = entry
                 list << item
               end
             end

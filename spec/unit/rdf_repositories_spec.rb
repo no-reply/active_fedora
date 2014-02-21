@@ -1,6 +1,6 @@
 require "spec_helper"
-describe Rdf::Repositories do
-  subject {Rdf::Repositories}
+describe ActiveFedora::Rdf::Repositories do
+  subject {ActiveFedora::Rdf::Repositories}
 
   after(:each) do
     subject.clear_repositories!

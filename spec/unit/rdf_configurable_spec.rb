@@ -1,8 +1,8 @@
 require "spec_helper"
-describe Rdf::Configurable do
+describe ActiveFedora::Rdf::Configurable do
   before(:each) do
     class DummyConfigurable
-      extend Rdf::Configurable
+      extend ActiveFedora::Rdf::Configurable
     end
   end
   after(:each) do
