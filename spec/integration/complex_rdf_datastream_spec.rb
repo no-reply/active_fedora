@@ -4,14 +4,10 @@ describe "Nested Rdf Objects" do
   describe "without type" do
     before(:each) do
       class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
-        map_predicates do |map|
-          map.parts(:in=> RDF::DC, :to=>'hasPart', :class_name=>'Component')
-        end
+        property :parts, :predicate => RDF::DC.hasPart, :class_name => 'Component'
 
         class Component < ActiveFedora::Rdf::Resource
-          map_predicates do |map|
-            map.label(:in=> RDF::DC, :to=>'title')
-          end
+          property :label, :predicate => RDF::DC.title
         end
       end
 
@@ -136,15 +132,11 @@ END
     describe "one class per assertion" do
       before(:each) do
         class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
-          map_predicates do |map|
-            map.mediator(:in=> RDF::DC, :class_name=>'MediatorUser')
-          end
+          property :mediator, :predicate => RDF::DC.mediator, :class_name => 'MediatorUser'
 
           class MediatorUser < ActiveFedora::Rdf::Resource
             configure :type => RDF::DC.AgentClass
-            map_predicates do |map|
-              map.title(:in=> RDF::DC)
-            end
+            property :title, :predicate => RDF::DC.title
           end
         end
       end
@@ -194,23 +186,17 @@ END
         end
 
         class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
-          map_predicates do |map|
-            map.series(:to => 'isEpisodeOf', :in=> EbuCore, :class_name=>'Series')
-            map.program(:to => 'isEpisodeOf', :in=> EbuCore, :class_name=>'Program')
-          end
+          property :series, :predicate => EbuCore.isEpisodeOf, :class_name => 'Series'
+          property :program, :predicate => EbuCore.isEpisodeOf, :class_name => 'Program'
 
           class Series < ActiveFedora::Rdf::Resource
             configure :type => 'http://www.ebu.ch/metadata/ontologies/ebucore#Series'
-            map_predicates do |map|
-              map.title(:in=> EbuCore)
-            end
+            property :title, :predicate => EbuCore.title
           end
 
           class Program  < ActiveFedora::Rdf::Resource
             configure :type => 'http://www.ebu.ch/metadata/ontologies/ebucore#Programme'
-            map_predicates do |map|
-              map.title(:in=> EbuCore)
-            end
+            property :title, :predicate => EbuCore.title
           end
         end
 
