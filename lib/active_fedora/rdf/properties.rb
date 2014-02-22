@@ -16,6 +16,7 @@ module ActiveFedora::Rdf
   #
   # You can pass a block to either to set index behavior.
   module Properties
+    extend Deprecation
     attr_accessor :properties
 
     ##
@@ -97,6 +98,7 @@ module ActiveFedora::Rdf
       end
     end
     def map_predicates
+      Deprecation.warn Properties, "map_predicates is deprecated and will be removed in active-fedora 8.0.0. Use property :name, :predicate => predicate instead.", caller
       mapper = Mapper.new(self)
       yield(mapper)
     end

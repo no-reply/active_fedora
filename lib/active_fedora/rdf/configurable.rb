@@ -9,6 +9,7 @@ module ActiveFedora::Rdf
   #    configure :base_uri => "http://oregondigital.org/resource/", :repository => :parent
   # Available properties are base_uri, rdf_label, type, and repository
   module Configurable
+    extend Deprecation
 
     def base_uri
       nil
@@ -23,8 +24,8 @@ module ActiveFedora::Rdf
     end
 
     def rdf_type(value)
-      ActiveFedora::Rdf::Resource.type_registry[RDF::URI.new(value)] = self
-      configure :type => RDF::URI.new(value)
+      Deprecation.warn Configurable, "rdf_type is deprecated and will be removed in active-fedora 8.0.0. Use configure :type => instead.", caller
+      configure :type => value
     end
 
     def repository
@@ -34,21 +35,25 @@ module ActiveFedora::Rdf
     # API method for configuring class properties an RDF Resource may need.
     # This is an alternative to overriding the methods extended with this module.
     def configure(options = {})
-      singleton_class.class_eval do {
-          :base_uri => options[:base_uri],
-          :rdf_label => options[:rdf_label],
-          :type => options[:type],
-          :repository => options[:repository]
-        }.each do |name, value|
-          # redefine reader methods only when required,
-          # otherwise, use the ancestor methods
-          if value
-            define_method name do
-              value
-            end
+      {
+        :base_uri => options[:base_uri],
+        :rdf_label => options[:rdf_label],
+        :type => options[:type],
+        :repository => options[:repository]
+      }.each do |name, value|
+        if value
+          value = self.send("transform_#{name}", value) if self.respond_to?("transform_#{name}")
+          define_singleton_method(name) do
+            value
           end
         end
       end
+    end
+
+    def transform_type(value)
+      value = RDF::URI.new(value)
+      Resource.type_registry[value] = self
+      return value
     end
 
   end

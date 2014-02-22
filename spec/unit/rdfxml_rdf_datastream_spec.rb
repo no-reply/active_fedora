@@ -21,7 +21,7 @@ describe ActiveFedora::RdfxmlRDFDatastream do
   end
 
   describe "a complex data model" do
-    before do 
+    before do
       class DAMS < RDF::Vocabulary("http://library.ucsd.edu/ontology/dams#")
         property :title
         property :relatedTitle
@@ -46,7 +46,7 @@ describe ActiveFedora::RdfxmlRDFDatastream do
 
       module RDF
         # This enables RDF to respond_to? :value
-        def self.value 
+        def self.value
           self[:value]
         end
       end
@@ -68,7 +68,7 @@ describe ActiveFedora::RdfxmlRDFDatastream do
 
         class Description < ActiveFedora::Rdf::Resource
           map_predicates do |map|
-            rdf_type DAMS.Description
+            configure :type => DAMS.Description
             map.value(:in=> RDF) do |index|
               index.as :searchable
             end
@@ -87,7 +87,7 @@ describe ActiveFedora::RdfxmlRDFDatastream do
       it "should have a subject" do
         subject.rdf_subject.to_s.should == "http://library.ucsd.edu/ark:/20775/"
       end
-      
+
     end
 
     describe "an instance with content" do
