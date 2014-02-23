@@ -9,8 +9,9 @@ describe ActiveFedora::RDFDatastream do
   describe "an instance that exists in the datastore, but hasn't been loaded" do
     before do
       class MyDatastream < ActiveFedora::NtriplesRDFDatastream
+        property :title, :predicate => RDF::DC.title
+        property :description, :predicate => RDF::DC.description, :multivalue => false
         map_predicates do |map|
-          map.title(in: RDF::DC)
           map.description(in: RDF::DC, multivalue: false)
         end
       end

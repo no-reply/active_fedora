@@ -11,26 +11,18 @@ describe ActiveFedora::Rdf::List do
       property :TemporalElement
     end
     class DemoList < ActiveFedora::RdfxmlRDFDatastream
-      map_predicates do |map|
-        map.elementList(:in => MADS, :to => 'elementList', :class_name=>'DemoList::List')
-      end
+      property :elementList, :predicate => MADS.elementList, :class_name => 'DemoList::List'
       class List < ActiveFedora::Rdf::List
-        map_predicates do |map|
-          map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => "DemoList::List::TopicElement")
-          map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => "DemoList::List::TemporalElement")
-        end
+        property :topicElement, :predicate => MADS.TopicElement, :class_name => 'DemoList::List::TopicElement'
+        property :temporalElement, :predicate => MADS.TemporalElement, :class_name => 'DemoList::List::TemporalElement'
 
         class TopicElement < ActiveFedora::Rdf::Resource
           configure :type => MADS.TopicElement
-          map_predicates do |map|
-            map.elementValue(:in=> MADS)
-          end
+          property :elementValue, :predicate => MADS.elementValue
         end
         class TemporalElement < ActiveFedora::Rdf::Resource
           configure :type => MADS.TemporalElement
-          map_predicates do |map|
-            map.elementValue(:in=> MADS)
-          end
+          property :elementValue, :predicate => MADS.elementValue
         end
       end
     end

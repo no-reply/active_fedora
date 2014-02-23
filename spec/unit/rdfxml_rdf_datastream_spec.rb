@@ -4,9 +4,7 @@ describe ActiveFedora::RdfxmlRDFDatastream do
   describe "a new instance" do
     before(:each) do
       class MyRdfxmlDatastream < ActiveFedora::RdfxmlRDFDatastream
-        map_predicates do |map|
-          map.publisher(:in => RDF::DC)
-        end
+        property :publisher, :predicate => RDF::DC.publisher
       end
       @subject = MyRdfxmlDatastream.new(@inner_object, 'mixed_rdf')
       @subject.stub(:pid => 'test:1')
@@ -52,10 +50,8 @@ describe ActiveFedora::RdfxmlRDFDatastream do
       end
 
       class MyDatastream < ActiveFedora::RdfxmlRDFDatastream
-        map_predicates do |map|
-          map.resource_type(:in => DAMS, :to => 'typeOfResource')
-          map.title(:in => DAMS, :class_name => 'Description')
-        end
+        property :resource_type, :predicate => DAMS.typeOfResource
+        property :title, :predicate => DAMS.title, :class_name => 'Description'
 
         rdf_subject { |ds| RDF::URI.new(ds.about) }
 
@@ -67,11 +63,9 @@ describe ActiveFedora::RdfxmlRDFDatastream do
         end
 
         class Description < ActiveFedora::Rdf::Resource
-          map_predicates do |map|
-            configure :type => DAMS.Description
-            map.value(:in=> RDF) do |index|
+          configure :type => DAMS.Description
+          property :value, :predicate => RDF.value do |index|
               index.as :searchable
-            end
           end
         end
       end

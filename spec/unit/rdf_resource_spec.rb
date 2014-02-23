@@ -3,17 +3,13 @@ describe ActiveFedora::Rdf::Resource do
 
   before(:each) do
     class DummyLicense < ActiveFedora::Rdf::Resource
-      map_predicates do |map|
-        map.title(:in => RDF::DC)
-      end
+      property :title, :predicate => RDF::DC.title
     end
 
     class DummyResource < ActiveFedora::Rdf::Resource
       configure :type => RDF::URI('http://example.org/SomeClass')
       property :license, :predicate => RDF::DC.license, :class_name => DummyLicense
-      map_predicates do |map|
-        map.title(:in => RDF::DC)
-      end
+      property :title, :predicate => RDF::DC.title
     end
   end
   after(:each) do

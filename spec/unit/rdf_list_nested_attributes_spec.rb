@@ -16,32 +16,25 @@ describe ActiveFedora::Rdf::List do
 
     class TopicElement < ActiveFedora::Rdf::Resource
       configure :type => MADS.TopicElement
-      map_predicates do |map|
-        map.elementValue(:in=> MADS)
-      end
+      property :elementValue, :predicate => MADS.elementValue
     end
     class TemporalElement < ActiveFedora::Rdf::Resource
       configure :type => MADS.TemporalElement
-      map_predicates do |map|
-        map.elementValue(:in=> MADS)
-      end
+      property :elementValue, :predicate => MADS.elementValue
     end
     class ElementList < ActiveFedora::Rdf::List
-      map_predicates do |map|
-        map.topicElement(:in=> MADS, :to =>"TopicElement", :class_name => 'TopicElement')
-        map.temporalElement(:in=> MADS, :to =>"TemporalElement", :class_name => 'TemporalElement')
-      end
+      property :topicElement, :predicate => MADS.TopicElement, :class_name => 'TopicElement'
+      property :temporalElement, :predicate => MADS.TemporalElement, :class_name => 'TemporalElement'
       accepts_nested_attributes_for :topicElement, :temporalElement
     end
 
     class Topic < ActiveFedora::Rdf::Resource
       configure :type => MADS.Topic
       configure :base_uri => "http://example.org/id_namespace#"
-      map_predicates do |map|
-        map.name(:in => MADS, :to => 'authoritativeLabel')
-        map.elementList(:in => MADS, :class_name => 'ElementList')
-        map.externalAuthority(:in => MADS, :to => 'hasExactExternalAuthority')
-      end
+      property :name, :predicate => MADS.authoritativeLabel
+      property :elementList, :predicate => MADS.elementList, :class_name => 'ElementList'
+      property :externalAuthority, :predicate => MADS.hasExactExternalAuthority
+
       accepts_nested_attributes_for :elementList
     end
   end
