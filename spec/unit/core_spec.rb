@@ -1,11 +1,9 @@
-require 'spec_helper'
+
 
 describe ActiveFedora::Base do
   before do
     class MyDatastream < ActiveFedora::NtriplesRDFDatastream
-      map_predicates do |map|
-        map.publisher(:in => RDF::DC)
-      end
+      property :publisher, :predicate => RDF::DC.publisher
     end
     class Library < ActiveFedora::Base
     end

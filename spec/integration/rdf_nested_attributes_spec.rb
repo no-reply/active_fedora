@@ -25,44 +25,35 @@ describe "Nesting attribute behavior of RDFDatastream" do
         end
 
         class ComplexRDFDatastream < ActiveFedora::NtriplesRDFDatastream
-          map_predicates do |map|
-            map.topic(in: DummyMADS, to: "Topic", class_name:"Topic")
-            map.personalName(in: DummyMADS, to: "PersonalName", class_name:"PersonalName")
-            map.title(in: RDF::DC)
-          end
+          property :topic, :predicate => DummyMADS.Topic, :class_name => "Topic"
+          property :personalName, :predicate => DummyMADS.PersonalName, :class_name => "PersonalName"
+          property :title, :predicate => RDF::DC.title
+
 
           accepts_nested_attributes_for :topic, :personalName
 
           class Topic < ActiveFedora::Rdf::Resource
-            map_predicates do |map|
-              map.elementList(in: DummyMADS, class_name:"ComplexRDFDatastream::ElementList")
-            end
+            property :elementList, :predicate => DummyMADS.elementList, :class_name => "ComplexRDFDatastream::ElementList"
             accepts_nested_attributes_for :elementList
           end
           class PersonalName < ActiveFedora::Rdf::Resource
-            map_predicates do |map|
-              map.elementList(in: DummyMADS, to: "elementList", class_name:"ComplexRDFDatastream::ElementList")
-              map.extraProperty(in: DummyMADS, to: "elementValue", class_name:"ComplexRDFDatastream::Topic")
-            end
+            property :elementList, :predicate => DummyMADS.elementList, :class_name => "ComplexRDFDatastream::ElementList"
+            property :extraProperty, :predicate => DummyMADS.elementValue, :class_name => "ComplexRDFDatastream::Topic"
             accepts_nested_attributes_for :elementList, :extraProperty
           end
           class ElementList < ActiveFedora::Rdf::List
             configure :type => DummyMADS.elementList
-            map_predicates do |map|
-              map.topicElement(in: DummyMADS, to: "TopicElement", :class_name => "ComplexRDFDatastream::MadsTopicElement")
-              map.temporalElement(in: DummyMADS, to: "TemporalElement")
-              map.fullNameElement(in: DummyMADS, to: "FullNameElement")
-              map.dateNameElement(in: DummyMADS, to: "DateNameElement")
-              map.nameElement(in: DummyMADS, to: "NameElement")
-              map.elementValue(in: DummyMADS)
-            end
+            property :topicElement, :predicate => DummyMADS.TopicElement, :class_name => "ComplexRDFDatastream::MadsTopicElement"
+            property :temporalElement, :predicate => DummyMADS.TemporalElement
+            property :fullNameElement, :predicate => DummyMADS.FullNameElement
+            property :dateNameElement, :predicate => DummyMADS.DateNameElement
+            property :nameElement, :predicate => DummyMADS.NameElement
+            property :elementValue, :predicate => DummyMADS.elementValue
             accepts_nested_attributes_for :topicElement
           end
           class MadsTopicElement < ActiveFedora::Rdf::Resource
             configure :type => DummyMADS.TopicElement
-            map_predicates do |map|
-              map.elementValue(in: DummyMADS)
-            end
+            property :elementValue, :predicate => DummyMADS.elementValue
           end
         end
       end
@@ -138,15 +129,11 @@ describe "Nesting attribute behavior of RDFDatastream" do
     describe "with an existing object" do
       before(:each) do
         class SpecDatastream < ActiveFedora::NtriplesRDFDatastream
-          map_predicates do |map|
-            map.parts(:in=> RDF::DC, :to=>'hasPart', :class_name=>'Component')
-          end
+          property :parts, :predicate => RDF::DC.hasPart, :class_name=>'Component'
           accepts_nested_attributes_for :parts, allow_destroy: true
 
           class Component < ActiveFedora::Rdf::ObjectResource
-            map_predicates do |map|
-              map.label(:in=> RDF::DC, :to=>'title')
-            end
+            property :label, :predicate => RDF::DC.title
           end
         end
 

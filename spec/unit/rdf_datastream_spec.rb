@@ -11,9 +11,6 @@ describe ActiveFedora::RDFDatastream do
       class MyDatastream < ActiveFedora::NtriplesRDFDatastream
         property :title, :predicate => RDF::DC.title
         property :description, :predicate => RDF::DC.description, :multivalue => false
-        map_predicates do |map|
-          map.description(in: RDF::DC, multivalue: false)
-        end
       end
       class MyObj < ActiveFedora::Base
         has_metadata 'descMetadata', type: MyDatastream
