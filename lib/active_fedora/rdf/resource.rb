@@ -136,9 +136,7 @@ module ActiveFedora::Rdf
 
     def persist!
       raise "failed when trying to persist to non-existant repository or parent resource" unless repository
-      each_statement do |s,p,o|
-        repository.delete [s, p, nil]
-      end
+      repository.delete [rdf_subject,nil,nil] unless node?
       if node?
         repository.statements.each do |statement|
           repository.send(:delete_statement, statement) if statement.subject == rdf_subject

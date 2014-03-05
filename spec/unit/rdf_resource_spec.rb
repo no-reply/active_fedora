@@ -94,6 +94,34 @@ describe ActiveFedora::Rdf::Resource do
     end
   end
 
+  describe "#persist!" do
+    context "when the repository is set" do
+      context "and the item is not a blank node" do
+        subject {DummyResource.new("info:fedora/example:pid")}
+        before(:each) do
+          @repo = RDF::Repository.new
+          subject.class.stub(:repository).and_return(nil)
+          subject.stub(:repository).and_return(@repo)
+          subject.title = "bla"
+          subject.persist!
+        end
+        it "should persist to the repository" do
+          expect(@repo.statements.first).to eq subject.statements.first
+        end
+        it "should delete from the repository" do
+          subject.reload
+          expect(subject.title).to eq ["bla"]
+          subject.title = []
+          expect(subject.title).to eq []
+          subject.persist!
+          subject.reload
+          expect(subject.title).to eq []
+          expect(@repo.statements.to_a.length).to eq 1 # Only the type statement
+        end
+      end
+    end
+  end
+
   describe 'property methods' do
     it 'should set and get properties' do
       subject.title = 'Comet in Moominland'
@@ -219,7 +247,7 @@ describe ActiveFedora::Rdf::Resource do
         property :publications, :predicate => RDF::FOAF.publications, :class_name => 'DummyDocument'
         property :knows, :predicate => RDF::FOAF.knows, :class_name => DummyPerson
       end
-      
+
       class DummyDocument < ActiveFedora::Rdf::Resource
         configure :type => RDF::URI('http://example.org/Document')
         property :title, :predicate => RDF::DC.title
