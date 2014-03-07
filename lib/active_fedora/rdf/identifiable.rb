@@ -25,10 +25,9 @@ module ActiveFedora::Rdf::Identifiable
     # responds to #rdf_subject, otherwise looks for the first
     # registered datastream that does.
     def resource_datastream(ds=nil)
-      @resource_datastream ||= nil
-      @resource_datastream = ds if ds
-      return @resource_datastream if @resource_datastream
-      return :descMetadata if self.ds_specs[:descMetadata][:type].respond_to? :rdf_subject
+      @resource_datastream ||= ds ? ds : nil
+      return @resource_datastream unless @resource_datastream.nil?
+      return :descMetadata if self.ds_specs['descMetadata'][:type].respond_to? :rdf_subject
       self.ds_specs.each do |dsid, conf|
         return dsid.to_sym if conf[:type].respond_to? :rdf_subject
       end
