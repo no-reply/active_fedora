@@ -8,7 +8,6 @@ describe ActiveFedora::RDFDatastream do
     end
     class DummyAsset < ActiveFedora::Base; end;
     class DummyResource < ActiveFedora::RDFDatastream
-      attr_reader :about
       property :title, :predicate => RDF::DC[:title], :class_name => RDF::Literal do |index|
         index.as :searchable, :displayable
       end
@@ -196,21 +195,6 @@ describe ActiveFedora::RDFDatastream do
         expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Base)
       end
     end
-    # context "when the subject is set with rdf_subject" do
-    #   before(:each) do
-    #     DummyResource.rdf_subject { |ds| RDF::URI.new(ds.about) }
-    #     require 'pry'
-    #     binding.pry
-    #     new_object = DummyAsset.new
-    #     new_object.save
-    #     subject.descMetadata.creator = new_object
-    #   end
-    #   it "should let me get to an AF:Base object" do
-    #     subject.save
-    #     subject.reload
-    #     expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Base)
-    #   end
-    # end
     context "when the object with a relationship is saved" do
       before(:each) do
         subject.save
