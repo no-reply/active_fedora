@@ -22,9 +22,7 @@ describe ActiveFedora::RDFDatastream do
       end
     end
     class DummyAsset < ActiveFedora::Base
-      include ActiveFedora::Rdf::Identifiable
       has_metadata :name => 'descMetadata', :type => DummyResource
-      #delegate :title, :to => :descMetadata, :multiple => true
       has_attributes :title, datastream: 'descMetadata', multiple: true
       has_attributes :license, :datastream => 'descMetadata', :multiple => true
       has_attributes :relation, :datastream => 'descMetadata', :at => [:license, :relation], :multiple => false
@@ -202,6 +200,29 @@ describe ActiveFedora::RDFDatastream do
       end
       it "should be retrievable" do
         expect(subject.descMetadata.creator.first.title).to eq ["subbla"]
+      end
+    end
+    context 'when the object has no Rdf::Resource' do
+      before(:each) do
+        class DummyOmAsset < ActiveFedora::Base
+          has_metadata :name => 'descMetadata', :type => OmDatastream
+        end
+        @new_object = DummyOmAsset.new
+        @new_object.save
+        subject.title = "bla"
+        subject.descMetadata.creator = @new_object
+      end
+      after(:each) do
+        Object.send(:remove_const, "DummyOmAsset") if Object
+      end
+      it "should let me get to an AF:Base object" do
+        subject.save
+        subject.reload
+        expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Base)
+      end
+      it "should not allow writing to the graph" do
+        expect{subject.descMetadata.creator.first.resource << RDF::Statement.new(RDF::Node.new, RDF::DC.title, 'title')
+}.to raise_error
       end
     end
   end

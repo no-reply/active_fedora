@@ -13,9 +13,11 @@ module ActiveFedora::Rdf::Identifiable
   ##
   # Defines which resource defines this ActiveFedora object.
   # This is required for ActiveFedora::Rdf::Resource#set_value to append graphs.
-  # @TODO: Consider allowing multiple defining metadata streams.
+  # If there is no RdfResource, make a dummy one and freeze its graph.
   def resource
-    self.send(self.class.resource_datastream).resource
+    return self.send(self.class.resource_datastream).resource unless self.class.resource_datastream.nil?
+    resource = Rdf::ObjectResource.new(self.pid)
+    resource.freeze
   end
   module ClassMethods
     ##
@@ -31,6 +33,7 @@ module ActiveFedora::Rdf::Identifiable
       self.ds_specs.each do |dsid, conf|
         return dsid.to_sym if conf[:type].respond_to? :rdf_subject
       end
+      return nil
     end
     ##
     # Finds the appropriate ActiveFedora::Base object given a URI from a graph.

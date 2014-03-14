@@ -120,7 +120,7 @@ module ActiveFedora::Rdf
 
     def add_child_node(resource)
       parent.insert [rdf_subject, predicate, resource.rdf_subject]
-      resource.parent = parent
+      resource.parent = parent unless resource.kind_of? ObjectResource
       self.node_cache[resource.rdf_subject] = resource
       resource.persist! if resource.class.repository == :parent
     end
