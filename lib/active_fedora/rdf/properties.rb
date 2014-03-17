@@ -6,18 +6,18 @@ module ActiveFedora::Rdf
   #
   # Define properties at the class level with:
   #
-  #    property :title, predicate: RDF::DC.title, class_name: ResourceClass
+  #    property :title, :predicate => RDF::DC.title, :class_name => ResourceClass
   #
   # or with the 'old' style:
   #
   #    map_predicates do |map|
-  #      map.title(in: RDF::DC)
+  #      map.title(:in => RDF::DC)
   #    end
   #
   # You can pass a block to either to set index behavior.
   module Properties
     extend Deprecation
-    attr_accessor :properties
+    attr_accessor :config
 
     ##
     # Registers properties for Resource-like classes
@@ -25,37 +25,23 @@ module ActiveFedora::Rdf
     # @param [Hash]  opts for this property, must include a :predicate
     # @yield [index] index sets solr behaviors for the property
     def property(name, opts={}, &block)
-      config[name] = ActiveFedora::Rdf::NodeConfig.new(name, opts[:predicate], opts.except(:predicate)).tap do |config|
+      self.config[name] = ActiveFedora::Rdf::NodeConfig.new(name, opts[:predicate], opts.except(:predicate)).tap do |config|
         config.with_index(&block) if block_given?
       end
       behaviors = config[name].behaviors.flatten if config[name].behaviors and not config[name].behaviors.empty?
-
-      self.properties[name] = {
-        behaviors: behaviors,
-        type: config[name].type,
-        class_name: config[name].class_name,
-        predicate: config[name].predicate,
-        term: config[name].term,
-        multivalue: config[name].multivalue
-      }
       register_property(name)
-    end
-
-    def properties
-      @properties ||= if superclass.respond_to? :properties
-        superclass.properties.dup
-      else
-        {}.with_indifferent_access
-      end
     end
 
     def config
       @config ||= if superclass.respond_to? :config
-        superclass.properties.dup
-      else
-        {}.with_indifferent_access
-      end
+                    superclass.config.dup
+                  else
+                    {}.with_indifferent_access
+                  end
     end
+
+    alias_method :properties, :config
+    alias_method :properties=, :config=
 
     def config_for_term_or_uri(term)
       return config[term.to_sym] unless term.kind_of? RDF::Resource
@@ -95,11 +81,11 @@ module ActiveFedora::Rdf
         vocab = properties.delete(:in)
         to = properties.delete(:to) || name
         predicate = vocab.send(to)
-        parent.property(name, properties.merge(predicate: predicate), &block)
+        parent.property(name, properties.merge(:predicate => predicate), &block)
       end
     end
     def map_predicates
-      Deprecation.warn Properties, "map_predicates is deprecated and will be removed in active-fedora 8.0.0. Use property :name, predicate: predicate instead.", caller
+      Deprecation.warn Properties, "map_predicates is deprecated and will be removed in active-fedora 8.0.0. Use property :name, :predicate => predicate instead.", caller
       mapper = Mapper.new(self)
       yield(mapper)
     end
