@@ -6,12 +6,12 @@ module ActiveFedora::Rdf
   #
   # Define properties at the class level with:
   #
-  #    property :title, :predicate => RDF::DC.title, :class_name => ResourceClass
+  #    property :title, predicate: RDF::DC.title, class_name: => ResourceClass
   #
   # or with the 'old' style:
   #
   #    map_predicates do |map|
-  #      map.title(:in => RDF::DC)
+  #      map.title(in: RDF::DC)
   #    end
   #
   # You can pass a block to either to set index behavior.
@@ -81,7 +81,7 @@ module ActiveFedora::Rdf
         vocab = properties.delete(:in)
         to = properties.delete(:to) || name
         predicate = vocab.send(to)
-        parent.property(name, properties.merge(:predicate => predicate), &block)
+        parent.property(name, properties.merge(predicate: predicate), &block)
       end
     end
     def map_predicates
