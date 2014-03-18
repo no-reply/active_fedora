@@ -78,7 +78,7 @@ module ActiveFedora::Rdf
     def attributes=(values)
       raise ArgumentError, "values must be a Hash, you provided #{values.class}" unless values.kind_of? Hash
       values.with_indifferent_access.each do |key, value|
-        if self.singleton_class.properties.keys.include?(key)
+        if properties.keys.include?(key)
           set_value(rdf_subject, key, value)
         elsif self.singleton_class.nested_attributes_options.keys.map{ |k| "#{k}_attributes"}.include?(key)
           send("#{key}=".to_sym, value)
@@ -296,7 +296,7 @@ module ActiveFedora::Rdf
     # Return the repository (or parent) that this resource should
     # write to when persisting.
     def repository
-      @repository ||= 
+      @repository ||=
         if self.class.repository == :parent
           final_parent
         else
