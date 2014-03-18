@@ -212,6 +212,10 @@ describe ActiveFedora::RDFDatastream do
       expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Base)
     end
 
+    it "should index AF::Base objects" do
+      expect(subject.to_solr[Solrizer.solr_name("desc_metadata__creator",:searchable)]).to eq [@new_object.resource.rdf_subject.to_s]
+    end
+
     it "should allow for deep attributes to be set directly" do
       subject.descMetadata.creator.first.title = "Bla"
       expect(subject.descMetadata.creator.first.title).to eq ["Bla"]
