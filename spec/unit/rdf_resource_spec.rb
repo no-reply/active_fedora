@@ -61,6 +61,19 @@ describe ActiveFedora::Rdf::Resource do
     end
   end
 
+  describe '#get_uri' do
+    let(:term) {nil}
+    before(:each) do
+      subject.stub(:base_uri).and_return("")
+    end
+    context "when given a non-uri" do
+      let(:term) {"NotAURI"}
+      it "should raise a runtime error" do
+        expect{subject.send(:get_uri,term)}.to raise_error("could not make a valid RDF::URI from NotAURI")
+      end
+    end
+  end
+
   describe "#persisted?" do
     before do
       repository = RDF::Repository.new
