@@ -211,6 +211,17 @@ describe ActiveFedora::RDFDatastream do
       subject.reload
       expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Base)
     end
+    context "when the AF:Base object is deleted" do
+      before do
+        subject.save
+        @new_object.destroy
+      end
+      it "should give back an AF::Rdf::Resource" do
+        subject.reload
+        expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Rdf::Resource)
+        expect(subject.descMetadata.creator.first.rdf_subject).to eq @new_object.resource.rdf_subject
+      end
+    end
 
     it "should index AF::Base objects" do
       expect(subject.to_solr[Solrizer.solr_name("desc_metadata__creator",:searchable)]).to eq [@new_object.resource.rdf_subject.to_s]
