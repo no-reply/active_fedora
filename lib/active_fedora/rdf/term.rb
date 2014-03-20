@@ -146,9 +146,7 @@ module ActiveFedora::Rdf
 
       # Converts an object to the appropriate class.
       def convert_object(value)
-        value = value.object if value.kind_of? RDF::Literal
-        value = make_node(value) if value.kind_of? RDF::Resource
-        value
+        value.kind_of?(RDF::Resource) ? make_node(value) : value
       end
 
       ##
