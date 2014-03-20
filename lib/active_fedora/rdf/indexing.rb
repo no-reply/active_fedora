@@ -22,6 +22,8 @@ module ActiveFedora
               val = val.to_s 
             elsif val.kind_of? Rdf::Resource
               val = val.solrize
+            elsif val.kind_of? RDF::Literal
+              val = val.object
             end
             self.class.create_and_insert_terms(apply_prefix(field_key), val, field_info[:behaviors], solr_doc)
           end
