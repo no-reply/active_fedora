@@ -207,6 +207,7 @@ module ActiveFedora::Rdf
       @term_cache ||= {}
       term = ActiveFedora::Rdf::Term.new(self, args)
       @term_cache["#{term.rdf_subject}/#{term.property}"] ||= term
+      @term_cache["#{term.rdf_subject}/#{term.property}"].language = term.language
       @term_cache["#{term.rdf_subject}/#{term.property}"]
     end
 
