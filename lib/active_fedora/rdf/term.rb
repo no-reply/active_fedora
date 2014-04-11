@@ -1,9 +1,13 @@
 module ActiveFedora::Rdf
   class Term
-    attr_accessor :parent, :value_arguments, :node_cache
+    attr_accessor :parent, :value_arguments, :language, :node_cache
     delegate *(Array.public_instance_methods - [:__send__, :__id__, :class, :object_id] + [:as_json]), :to => :result
     def initialize(parent, value_arguments)
       self.parent = parent
+      if value_arguments.last.is_a?(Hash)
+        self.language = value_arguments.last.delete(:language)
+        value_arguments.pop
+      end
       self.value_arguments = value_arguments
     end
 
@@ -13,6 +17,7 @@ module ActiveFedora::Rdf
 
     def result
       result = parent.query(:subject => rdf_subject, :predicate => predicate)
+      .select{|x| language_matches?(x.object)}
       .map{|x| convert_object(x.object)}
       .reject(&:nil?)
       return result if !property_config || property_config[:multivalue]
@@ -94,6 +99,11 @@ module ActiveFedora::Rdf
     end
 
     protected
+
+      def language_matches?(obj)
+        return true unless self.language
+        obj.respond_to?(:language) && obj.language && obj.language.to_sym == self.language.to_sym
+      end
 
       def node_cache
         @node_cache ||= {}
