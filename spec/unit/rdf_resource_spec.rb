@@ -215,7 +215,7 @@ describe ActiveFedora::Rdf::Resource do
           subject.title = [RDF::Literal.new("Comet in Moominland", :language => :en), RDF::Literal.new("Finn Family Moomintroll", :language => :fr), "Test"]
         end
         it "should return values that match that language" do
-          expect(subject.get_values(RDF::DC.title, :language => :en)).to eq ["Comet in Moominland"]
+          expect(subject.get_values(RDF::DC.title, :language => :en)).to eq [RDF::Literal("Comet in Moominland", :language => :en)]
         end
       end
       context "and the language doesn't exist" do
@@ -233,7 +233,7 @@ describe ActiveFedora::Rdf::Resource do
           subject.title = [RDF::Literal.new("Comet in Moominland", :language => :en), RDF::Literal.new("Finn Family Moomintroll", :language => :fr), "Test"]
         end
         it "should return them all as strings" do
-          expect(subject.get_values(:title)).to eq ["Comet in Moominland", "Finn Family Moomintroll", "Test"]
+          expect(subject.get_values(:title)).to eq [RDF::Literal("Comet in Moominland", :language => :en), RDF::Literal("Finn Family Moomintroll", :language => :fr), RDF::Literal("Test")]
         end
       end
     end

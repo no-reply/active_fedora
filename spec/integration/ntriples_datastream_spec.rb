@@ -75,13 +75,13 @@ describe ActiveFedora::NtriplesRDFDatastream do
   describe "serializing" do
     it "should handle dates" do
       subject.date_uploaded = Date.parse('2012-11-02')
-      subject.date_uploaded.first.should be_kind_of Date
+      subject.date_uploaded.first.should be_kind_of RDF::Literal::Date
       solr_document = subject.to_solr
       solr_document[ActiveFedora::SolrService.solr_name('rdf__date_uploaded', type: :date)].should == ['2012-11-02T00:00:00Z']
     end
     it "should handle integers" do
       subject.size = 12345 
-      subject.size.should be_kind_of Fixnum
+      subject.size.should be_kind_of RDF::Literal::Integer
       solr_document = subject.to_solr
       solr_document[ActiveFedora::SolrService.solr_name('rdf__size', :stored_sortable, type: :integer)].should == '12345'
     end
