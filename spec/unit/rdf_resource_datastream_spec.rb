@@ -97,6 +97,15 @@ describe ActiveFedora::RDFDatastream do
         expect(subject.descMetadata).to be_changed
       end
 
+      it 'does not call save' do
+        expect(subject).not_to receive :save
+        subject.descMetadata.title = 'my new title'
+      end
+
+      it 'leaves object unsaved' do
+        expect(subject).not_to be_persisted
+      end
+
       context "after it is persisted" do
         before do
           subject.save
@@ -137,6 +146,20 @@ describe ActiveFedora::RDFDatastream do
           it "should have datastream content" do
             expect(@object.descMetadata.datastream_content).not_to be_blank
           end
+
+          it 'does not save when writing new data' do
+            expect(@object).not_to receive :save
+            @object.descMetadata.license << DummySubnode.new
+            @object.descMetadata.title << 'my new title'
+            @object.descMetadata.license = DummySubnode.new
+            @object.descMetadata.title = 'my other new title'
+          end
+
+          it 'can reload old data before save' do
+            @object.descMetadata.title = 'my new title'
+            @object.reload
+            expect(@object.descMetadata.title).to eq ["bla"]
+          end
         end
       end
     end
@@ -155,6 +178,15 @@ describe ActiveFedora::RDFDatastream do
 
         it "should mark it as changed" do
           expect(subject.descMetadata).to be_changed
+        end
+
+        it 'does not call save' do
+          expect(subject).not_to receive :save
+          subject.descMetadata.license = DummySubnode.new
+        end
+
+        it 'leaves object unsaved' do
+          expect(subject).not_to be_persisted
         end
       end
       context "persisted to repository" do
