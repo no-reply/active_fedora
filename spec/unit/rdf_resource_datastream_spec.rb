@@ -90,6 +90,16 @@ describe ActiveFedora::RDFDatastream do
         subject.descMetadata.title = "bla"
       end
 
+      it 'does not call save' do
+        expect(subject).not_to receive :save
+        subject.descMetadata.title = 'my new title'
+        subject.descMetadata.license = DummySubnode.new
+      end
+
+      it 'leaves object unsaved' do
+        expect(subject).not_to be_persisted
+      end
+
       it "should let you access" do
         expect(subject.descMetadata.title).to eq ["bla"]
       end
