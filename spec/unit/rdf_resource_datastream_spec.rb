@@ -225,6 +225,13 @@ describe ActiveFedora::RDFDatastream do
       expect(subject.descMetadata.creator.first.title).to eq ["subbla"]
     end
 
+    it "should not save the child resource" do
+      @new_object = DummyAsset.new
+      @new_object.save
+      expect(@new_object).not_to receive :save
+      subject.descMetadata.creator = @new_object
+    end
+
     it "should let me get to an AF:Base object" do
       subject.save
       subject.reload
