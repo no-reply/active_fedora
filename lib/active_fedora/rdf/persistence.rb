@@ -11,7 +11,7 @@ module ActiveFedora
       extend ActiveSupport::Concern
 
       included do
-        configure :base_uri => 'info:fedora/'
+        configure :base_uri => 'info:fedora/' unless base_uri
         attr_accessor :datastream
       end
      
