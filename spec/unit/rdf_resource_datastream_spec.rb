@@ -165,32 +165,6 @@ describe ActiveFedora::RDFDatastream do
     end
   end
 
-  context "with a custom id_to_uri mapping function" do
-    before do
-      class AssetWithMap < ActiveFedora::Base
-        class << self
-          def id_to_uri(id)
-            "#{ActiveFedora.fedora.host}/foobar/#{id}"
-          end
-
-          def uri_to_id(uri)
-            uri.to_s.split('/')[-1]
-          end
-        end
-
-        has_metadata  'descMetadata', type: DummyResource
-        has_attributes :title, :license, datastream: 'descMetadata', multiple: true
-      end
-    end
-    subject { AssetWithMap.new(pid: '12345', title: ['my title']) }
-
-    it "should set the subject of the datastream using the uri" do
-      subject.save
-      expect(subject.descMetadata.content).to eq "<http://localhost:8983/fedora/rest/foobar/12345> <http://purl.org/dc/terms/title> \"my title\" .\n"
-    end
-
-  end
-
   describe "relationships" do
     before do
       @new_object = DummyAsset.new
@@ -209,6 +183,7 @@ describe ActiveFedora::RDFDatastream do
       subject.reload
       expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Base)
     end
+
     context "when the AF:Base object is deleted" do
       before do
         subject.save
@@ -267,74 +242,6 @@ describe ActiveFedora::RDFDatastream do
       it "should be retrievable" do
         expect(subject.descMetadata.creator.first.title).to eq ["subbla"]
       end
-    end
-
-    context 'when the object has no Rdf::Resource' do
-      before do
-        subject.title = ["bla"]
-        subject.descMetadata.creator = @new_object
-        subject.save
-        subject.reload
-      end
-
-      it "should let me get to an AF:Base object" do
-        expect(subject.descMetadata.creator.first).to be_kind_of(ActiveFedora::Base)
-      end
-
-      it "should not allow writing to the graph" do
-        expect{@new_object.resource << RDF::Statement.new(RDF::Node.new, RDF::DC.title, 'title')
-}.to raise_error TypeError
-      end
-    end    
-  end
-
-  context 'with custom resource' do
-    before do
-
-      class DummyATResource < ActiveTriples::Resource
-        configure :base_uri => 'http://example.org/at/obj#', :type => RDF::OWL.Thing
-        property :title, :predicate => RDF::DC.alternative
-        property :my_special_property, :predicate => RDF::DC.spatial
-      end
-
-      DummyResource.resource_class DummyATResource
-    end
-
-    after do
-      Object.send(:remove_const, "DummyATResource")
-    end
-
-    it 'lets me specify a resource class' do
-      expect(DummyResource.resource_class < DummyATResource).to be_true
-    end
-
-    it 'creates underlying resource of type resource_class' do
-      expect(subject.resource).to be_a DummyATResource
-    end
-
-    it 'has properties from resource_class' do
-      expect(subject.resource.class.properties).to include :my_special_property.to_s
-    end
-
-    it 'favors property configuration from datastream' do
-      expect(subject.resource.class.properties['title'].predicate).to eq RDF::DC.title
-    end
-
-    it 'exposes resource propreties to parent object via datastream' do
-      subject.resource.title = 'Wizard of Oz'
-      expect(subject.title).to eq subject.resource.title
-    end
-
-    it 'applies base_uri from resource class' do
-      expect(subject.resource.class.base_uri).to eq DummyATResource.base_uri
-    end
-
-    it 'applies rdf type from resource class' do
-      expect(subject.resource.class.type).to eq DummyATResource.type
-    end
-
-    it 'refuses to change resource_class once set' do
-      expect { DummyResource.resource_class(ActiveTriples::Resource) }.to raise_error ArgumentError
     end
   end
 end

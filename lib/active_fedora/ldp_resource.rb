@@ -4,8 +4,12 @@ module ActiveFedora
       graph_class.new(subject_uri)
     end
 
-    def graph_class
+    def self.graph_class
       ActiveFedora::FedoraRdfResource
+    end
+
+    def graph_class
+      self.class.graph_class
     end
 
     ##
@@ -18,5 +22,6 @@ module ActiveFedora
       # forces a cast to FedoraRdfResource
       graph_without_inlined_resources(original_graph, inlined_resources)
     end
+    
   end
 end

@@ -25,9 +25,8 @@ module ActiveFedora
 
       # Overrides ActiveTriples::Resource
       def persisted?
-        @persisted ||= (not datastream.new?)
+        @persisted ||= (not datastream.new_record?)
       end
-
     end
   end
 end

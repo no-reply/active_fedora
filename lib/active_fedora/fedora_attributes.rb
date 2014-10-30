@@ -1,7 +1,6 @@
 module ActiveFedora
   module FedoraAttributes
     extend ActiveSupport::Concern
-    include Rdf::Identifiable
 
     included do
       include Rdf::Indexing
